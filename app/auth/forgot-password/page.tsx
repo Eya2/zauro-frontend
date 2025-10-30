@@ -1,9 +1,9 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
@@ -17,8 +17,10 @@ import { Mail, Phone, ArrowLeft, CheckCircle } from "lucide-react"
 type Step = "request" | "verify" | "reset" | "success"
 
 export default function ForgotPasswordPage() {
+  const router = useRouter()
   const [step, setStep] = useState<Step>("request")
   const [method, setMethod] = useState<"email" | "phone">("email")
+
   const [formData, setFormData] = useState({
     email: "",
     phone: "",
@@ -26,40 +28,55 @@ export default function ForgotPasswordPage() {
     newPassword: "",
     confirmPassword: "",
   })
+
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
   const [success, setSuccess] = useState("")
 
-  const handleRequestOtp = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
-    setSuccess("")
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
 
-    try {
-      await api.requestPasswordReset({
-        type: "PASSWORD_RESET",
-        ...(method === "email" ? { email: formData.email } : { phone: formData.phone }),
-      })
-      setSuccess(`OTP sent to your ${method}`)
-      setStep("verify")
-    } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to send OTP. Please try again.")
-    } finally {
-      setLoading(false)
-    }
+  /* -------------------------------------------------- */
+  /* 1.  REQUEST OTP                                    */
+  /* -------------------------------------------------- */
+  // forgot-password-page.tsx  (only the changed lines shown)
+const handleRequestOtp = async (e: React.FormEvent) => {
+  e.preventDefault()
+  setLoading(true)
+  setError("")
+  setSuccess("")
+
+  try {
+    // build payload exactly as backend expects (NO type)
+    const payload =
+      method === "email"
+        ? { email: formData.email.trim() }
+        : { phone: formData.phone.trim() }
+
+    await api.requestPasswordReset(payload) // ← now matches OtpRequest
+    setSuccess(`OTP sent to your ${method}`)
+    setStep("verify")
+  } catch (err: any) {
+    setError(err.response?.data?.message || "Failed to send OTP. Please try again.")
+  } finally {
+    setLoading(false)
   }
+}
 
+  /* -------------------------------------------------- */
+  /* 2.  VERIFY OTP                                     */
+  /* -------------------------------------------------- */
   const handleVerifyOtp = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
     setError("")
 
     try {
-      await api.verifyOtp({
-        code: formData.code,
-        ...(method === "email" ? { email: formData.email } : { phone: formData.phone }),
-      })
+      const payload = { code: formData.code.trim() }
+      if (method === "email") Object.assign(payload, { email: formData.email.trim() })
+      else Object.assign(payload, { phone: formData.phone.trim() })
+
+      await api.verifyOtp(payload)
       setStep("reset")
     } catch (err: any) {
       setError(err.response?.data?.message || "Invalid OTP. Please try again.")
@@ -68,6 +85,9 @@ export default function ForgotPasswordPage() {
     }
   }
 
+  /* -------------------------------------------------- */
+  /* 3.  RESET PASSWORD                                 */
+  /* -------------------------------------------------- */
   const handleResetPassword = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -78,7 +98,6 @@ export default function ForgotPasswordPage() {
       setLoading(false)
       return
     }
-
     if (formData.newPassword.length < 8) {
       setError("Password must be at least 8 characters long")
       setLoading(false)
@@ -86,11 +105,14 @@ export default function ForgotPasswordPage() {
     }
 
     try {
-      await api.resetPassword({
-        code: formData.code,
+      const payload = {
+        code: formData.code.trim(),
         newPassword: formData.newPassword,
-        ...(method === "email" ? { email: formData.email } : { phone: formData.phone }),
-      })
+      } as any
+      if (method === "email") payload.email = formData.email.trim()
+      else payload.phone = formData.phone.trim()
+
+      await api.resetPassword(payload)
       setStep("success")
     } catch (err: any) {
       setError(err.response?.data?.message || "Failed to reset password. Please try again.")
@@ -99,13 +121,9 @@ export default function ForgotPasswordPage() {
     }
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
-
+  /* -------------------------------------------------- */
+  /* UI                                                 */
+  /* -------------------------------------------------- */
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/20 to-background p-4">
       <div className="w-full max-w-md">
@@ -150,13 +168,13 @@ export default function ForgotPasswordPage() {
               </div>
             </div>
           </CardHeader>
+
           <CardContent>
             {error && (
               <Alert variant="destructive" className="mb-4">
                 <AlertDescription>{error}</AlertDescription>
               </Alert>
             )}
-
             {success && (
               <Alert className="mb-4">
                 <CheckCircle className="h-4 w-4" />
@@ -164,8 +182,9 @@ export default function ForgotPasswordPage() {
               </Alert>
             )}
 
+            {/* ---------- 1. REQUEST OTP ---------- */}
             {step === "request" && (
-              <Tabs value={method} onValueChange={(value) => setMethod(value as "email" | "phone")}>
+              <Tabs value={method} onValueChange={(v) => setMethod(v as "email" | "phone")}>
                 <TabsList className="grid w-full grid-cols-2">
                   <TabsTrigger value="email">Email</TabsTrigger>
                   <TabsTrigger value="phone">Phone</TabsTrigger>
@@ -235,6 +254,7 @@ export default function ForgotPasswordPage() {
               </Tabs>
             )}
 
+            {/* ---------- 2. VERIFY OTP ---------- */}
             {step === "verify" && (
               <form onSubmit={handleVerifyOtp} className="space-y-4">
                 <div className="space-y-2">
@@ -264,6 +284,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
+            {/* ---------- 3. RESET PASSWORD ---------- */}
             {step === "reset" && (
               <form onSubmit={handleResetPassword} className="space-y-4">
                 <div className="space-y-2">
@@ -303,6 +324,7 @@ export default function ForgotPasswordPage() {
               </form>
             )}
 
+            {/* ---------- 4. SUCCESS ---------- */}
             {step === "success" && (
               <div className="text-center space-y-4">
                 <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
@@ -315,6 +337,7 @@ export default function ForgotPasswordPage() {
               </div>
             )}
 
+            {/* ---------- FOOTER LINK ---------- */}
             {step === "request" && (
               <div className="mt-6 text-center">
                 <p className="text-sm text-muted-foreground">

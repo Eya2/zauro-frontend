@@ -1,23 +1,23 @@
-"use client"
+"use client";
 
-import type React from "react"
-
-import { useState } from "react"
-import { useRouter } from "next/navigation"
-import Link from "next/link"
-import Image from "next/image"
-import { useAuth } from "@/lib/auth-context"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Alert, AlertDescription } from "@/components/ui/alert"
-import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { Eye, EyeOff, Mail, Lock, User, Phone } from "lucide-react"
+import type React from "react";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import Image from "next/image";
+import { useAuth } from "@/lib/auth-context";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { LoadingSpinner } from "@/components/ui/loading-spinner";
+import { Eye, EyeOff, Mail, Lock, User, Phone, MapPin } from "lucide-react";
 
 export default function RegisterPage() {
-  const router = useRouter()
-  const { register } = useAuth()
+  const router = useRouter();
+  const { register } = useAuth();
+
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -25,29 +25,31 @@ export default function RegisterPage() {
     phone: "",
     password: "",
     confirmPassword: "",
-  })
-  const [showPassword, setShowPassword] = useState(false)
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+    country: "",
+  });
+
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }));
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault()
-    setLoading(true)
-    setError("")
+    e.preventDefault();
+    setLoading(true);
+    setError("");
 
-    // Validate passwords match
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match")
-      setLoading(false)
-      return
+      setError("Passwords do not match");
+      setLoading(false);
+      return;
     }
-
-    // Validate password strength
     if (formData.password.length < 8) {
-      setError("Password must be at least 8 characters long")
-      setLoading(false)
-      return
+      setError("Password must be at least 8 characters long");
+      setLoading(false);
+      return;
     }
 
     try {
@@ -57,21 +59,15 @@ export default function RegisterPage() {
         email: formData.email,
         password: formData.password,
         phone: formData.phone || undefined,
-      })
-      router.push("/dashboard")
+        country: formData.country || undefined,
+      });
+      router.push("/dashboard");
     } catch (err: any) {
-      setError(err.response?.data?.message || "Registration failed. Please try again.")
+      setError(err.response?.data?.message || "Registration failed. Please try again.");
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
+  };
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/10 to-background p-4 rustic-texture">
@@ -79,13 +75,7 @@ export default function RegisterPage() {
         <div className="text-center mb-8">
           <Link href="/" className="inline-flex flex-col items-center space-y-3 logo-container">
             <div className="w-16 h-16 flex items-center justify-center">
-              <Image
-                src="/logo.png"
-                alt="Zauro Marketplace"
-                width={64}
-                height={64}
-                className="w-full h-full object-contain"
-              />
+              <Image src="/logo.png" alt="Zauro Marketplace" width={64} height={64} className="w-full h-full object-contain" />
             </div>
             <div className="flex flex-col items-center">
               <span className="font-bold text-3xl text-foreground tracking-wide">Zauro</span>
@@ -113,33 +103,14 @@ export default function RegisterPage() {
                   <Label htmlFor="firstName">First Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="firstName"
-                      name="firstName"
-                      type="text"
-                      placeholder="First name"
-                      value={formData.firstName}
-                      onChange={handleChange}
-                      className="pl-10"
-                      required
-                    />
+                    <Input id="firstName" name="firstName" type="text" placeholder="First name" value={formData.firstName} onChange={handleChange} className="pl-10" required />
                   </div>
                 </div>
-
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
                   <div className="relative">
                     <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      id="lastName"
-                      name="lastName"
-                      type="text"
-                      placeholder="Last name"
-                      value={formData.lastName}
-                      onChange={handleChange}
-                      className="pl-10"
-                      required
-                    />
+                    <Input id="lastName" name="lastName" type="text" placeholder="Last name" value={formData.lastName} onChange={handleChange} className="pl-10" required />
                   </div>
                 </div>
               </div>
@@ -148,16 +119,7 @@ export default function RegisterPage() {
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
                   <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="email"
-                    name="email"
-                    type="email"
-                    placeholder="Enter your email"
-                    value={formData.email}
-                    onChange={handleChange}
-                    className="pl-10"
-                    required
-                  />
+                  <Input id="email" name="email" type="email" placeholder="Enter your email" value={formData.email} onChange={handleChange} className="pl-10" required />
                 </div>
               </div>
 
@@ -165,15 +127,15 @@ export default function RegisterPage() {
                 <Label htmlFor="phone">Phone Number (Optional)</Label>
                 <div className="relative">
                   <Phone className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    id="phone"
-                    name="phone"
-                    type="tel"
-                    placeholder="Enter your phone number"
-                    value={formData.phone}
-                    onChange={handleChange}
-                    className="pl-10"
-                  />
+                  <Input id="phone" name="phone" type="tel" placeholder="+1234567890" value={formData.phone} onChange={handleChange} className="pl-10" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="country">Country Code (Optional)</Label>
+                <div className="relative">
+                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Input id="country" name="country" type="text" placeholder="US" value={formData.country} onChange={handleChange} className="pl-10" maxLength={2} />
                 </div>
               </div>
 
@@ -191,18 +153,8 @@ export default function RegisterPage() {
                     className="pl-10 pr-10"
                     required
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword((s) => !s)}>
+                    {showPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
@@ -221,18 +173,8 @@ export default function RegisterPage() {
                     className="pl-10 pr-10"
                     required
                   />
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                  >
-                    {showConfirmPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
+                  <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword((s) => !s)}>
+                    {showConfirmPassword ? <EyeOff className="h-4 w-4 text-muted-foreground" /> : <Eye className="h-4 w-4 text-muted-foreground" />}
                   </Button>
                 </div>
               </div>
@@ -261,5 +203,5 @@ export default function RegisterPage() {
         </Card>
       </div>
     </div>
-  )
+  );
 }

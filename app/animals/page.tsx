@@ -13,7 +13,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { ListAnimalModal } from "@/components/modals/list-animal-modal"
-import type { Animal, AnimalSpecies, AnimalFilters } from "@/lib/types"
+import type { Animal, AnimalSpecies, AnimalFilters, AnimalGender } from "@/lib/types"
 import { Search, Filter, PlusCircle, Eye, Heart, Calendar, Coins, TrendingUp } from "lucide-react"
 import Link from "next/link"
 
@@ -29,61 +29,47 @@ export default function AnimalsPage() {
   const [selectedAnimal, setSelectedAnimal] = useState<Animal | null>(null)
   const [isListModalOpen, setIsListModalOpen] = useState(false)
 
-  const speciesOptions: AnimalSpecies[] = ["DOG", "CAT", "BIRD", "FISH", "REPTILE", "OTHER"]
+  const speciesOptions: AnimalSpecies[] = [
+    "COW","SHEEP","GOAT","OTHER"
+  ]
 
-  useEffect(() => {
-    fetchAnimals()
-  }, [currentPage, filters, searchTerm, viewMode])
+  useEffect(() => { fetchAnimals() }, [currentPage, filters, searchTerm, viewMode])
 
   const fetchAnimals = async () => {
     try {
       setLoading(true)
       const base = { page: currentPage, limit: 12 }
-  
-      let response
-      if (viewMode === "my-animals") {
-        response = await api.getMyAnimals(base)
-      } else {
-        response = await api.getAnimals(base)
-
-      }
-  
-      setAnimals(response.data || [])
-      setTotalPages(response.pagination?.totalPages || 1)
-    } catch (error) {
-      console.error("Failed to fetch animals:", error)
+      const res =
+        viewMode === "my-animals"
+          ? await api.findMine(base)
+          : await api.getAnimals({ ...base, filters })
+      setAnimals(res.data || [])
+      setTotalPages(res.pagination?.totalPages || 1)
+    } catch (e) {
+      console.error(e)
     } finally {
       setLoading(false)
     }
   }
 
-  const handleFilterChange = (key: keyof AnimalFilters, value: any) => {
-    setFilters((prev) => ({
-      ...prev,
-      [key]: value,
-    }))
+  const handleFilterChange = (k: keyof AnimalFilters, v: any) => {
+    setFilters((p) => ({ ...p, [k]: v }))
     setCurrentPage(1)
   }
-
   const clearFilters = () => {
     setFilters({})
     setSearchTerm("")
     setCurrentPage(1)
   }
-
-  const handleListForTrade = (animal: Animal) => {
-    setSelectedAnimal(animal)
+  const handleListForTrade = (a: Animal) => {
+    setSelectedAnimal(a)
     setIsListModalOpen(true)
   }
-
-  const handleListSuccess = () => {
-    fetchAnimals()
-  }
+  const handleListSuccess = () => fetchAnimals()
 
   const AnimalCard = ({ animal }: { animal: Animal }) => {
     const isOwner = user?.id === animal.ownerId
-    const canListForTrade = isOwner && !animal.isListed
-
+    const canList = isOwner && !animal.isListed
     return (
       <Card className="nft-card overflow-hidden">
         <div className="aspect-square relative overflow-hidden">
@@ -94,14 +80,10 @@ export default function AnimalsPage() {
           />
           <div className="absolute top-2 right-2 flex space-x-1">
             {animal.tokenId && (
-              <Badge variant="secondary" className="bg-primary/90 text-primary-foreground">
-                NFT
-              </Badge>
+              <Badge variant="secondary" className="bg-primary/90 text-primary-foreground">NFT</Badge>
             )}
             {animal.isListed && (
-              <Badge variant="default" className="bg-green-500/90 text-white">
-                Listed
-              </Badge>
+              <Badge variant="default" className="bg-green-500/90 text-white">Listed</Badge>
             )}
           </div>
           <div className="absolute top-2 left-2">
@@ -110,49 +92,42 @@ export default function AnimalsPage() {
             </Button>
           </div>
         </div>
-        <CardContent className="p-4">
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-lg truncate">{animal.name}</h3>
-              {animal.aiPredictionValue && (
-                <div className="flex items-center text-sm text-muted-foreground">
-                  <Coins className="h-3 w-3 mr-1" />
-                  {Number.parseFloat(animal.aiPredictionValue).toFixed(0)}
-                </div>
-              )}
-            </div>
-            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-              <Badge variant="outline" className="text-xs">
-                {animal.species}
-              </Badge>
-              {animal.breed && <span>• {animal.breed}</span>}
-              {animal.age && <span>• {animal.age}y</span>}
-            </div>
-            {animal.description && <p className="text-sm text-muted-foreground line-clamp-2">{animal.description}</p>}
-            <div className="flex items-center justify-between pt-2">
-              <div className="flex items-center text-xs text-muted-foreground">
-                <Calendar className="h-3 w-3 mr-1" />
-                {new Date(animal.createdAt).toLocaleDateString()}
+        <CardContent className="p-4 space-y-2">
+          <div className="flex items-center justify-between">
+            <h3 className="font-semibold text-lg truncate">{animal.name}</h3>
+            {animal.aiPredictionValue && (
+              <div className="flex items-center text-sm text-muted-foreground">
+                <Coins className="h-3 w-3 mr-1" />
+                {animal.aiPredictionValue}
               </div>
-              <div className="flex space-x-2">
-                {canListForTrade && (
-                  <Button
-                    size="sm"
-                    variant="default"
-                    onClick={() => handleListForTrade(animal)}
-                    className="bg-primary hover:bg-primary/90"
-                  >
-                    <TrendingUp className="h-3 w-3 mr-1" />
-                    List
-                  </Button>
-                )}
-                <Button asChild size="sm" variant="outline">
-                  <Link href={`/animals/${animal.id}`}>
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Link>
+            )}
+          </div>
+          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
+            <Badge variant="outline" className="text-xs">{animal.species}</Badge>
+            {animal.breed && <span>• {animal.breed}</span>}
+            {animal.age && <span>• {animal.age}y</span>}
+          </div>
+          {animal.description && (
+            <p className="text-sm text-muted-foreground line-clamp-2">{animal.description}</p>
+          )}
+          <div className="flex items-center justify-between pt-2">
+            <div className="flex items-center text-xs text-muted-foreground">
+              <Calendar className="h-3 w-3 mr-1" />
+              {new Date(animal.createdAt).toLocaleDateString()}
+            </div>
+            <div className="flex space-x-2">
+              {canList && (
+                <Button size="sm" onClick={() => handleListForTrade(animal)}>
+                  <TrendingUp className="h-3 w-3 mr-1" />
+                  List
                 </Button>
-              </div>
+              )}
+              <Button asChild size="sm" variant="outline">
+                <Link href={`/animals/${animal.id}`}>
+                  <Eye className="h-4 w-4 mr-1" />
+                  View
+                </Link>
+              </Button>
             </div>
           </div>
         </CardContent>
@@ -164,7 +139,6 @@ export default function AnimalsPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
         <Navbar />
-
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
             <div>
@@ -182,7 +156,7 @@ export default function AnimalsPage() {
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="space-y-4">
-                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)}>
+                <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
                   <TabsList>
                     <TabsTrigger value="all">All Animals</TabsTrigger>
                     <TabsTrigger value="my-animals">My Animals</TabsTrigger>
@@ -201,30 +175,38 @@ export default function AnimalsPage() {
                     />
                   </div>
 
+                  {/* Species filter – no empty-string item */}
                   <Select
-                    value={filters.species?.[0] || ""}
-                    onValueChange={(value) =>
-                      handleFilterChange("species", value ? [value as AnimalSpecies] : undefined)
-                    }
+                    value={filters.species ?? "ALL"}
+                    onValueChange={(v) => handleFilterChange("species", v === "ALL" ? undefined : (v as AnimalSpecies))}
                   >
                     <SelectTrigger>
                       <SelectValue placeholder="Species" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All Species</SelectItem>
-                      {speciesOptions.map((species) => (
-                        <SelectItem key={species} value={species}>
-                          {species}
+                      <SelectItem value="ALL">All Species</SelectItem>
+                      {speciesOptions.map((s) => (
+                        <SelectItem key={s} value={s}>
+                          {s}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
 
-                  <Input
-                    placeholder="Breed"
-                    value={filters.breed || ""}
-                    onChange={(e) => handleFilterChange("breed", e.target.value || undefined)}
-                  />
+                  {/* Gender filter – no empty-string item */}
+                  <Select
+                    value={filters.gender ?? "ALL"}
+                    onValueChange={(v) => handleFilterChange("gender", v === "ALL" ? undefined : (v as AnimalGender))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Gender" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="ALL">All Genders</SelectItem>
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
 
                   <div className="flex space-x-2">
                     <Button variant="outline" onClick={clearFilters} className="bg-transparent">
@@ -241,11 +223,11 @@ export default function AnimalsPage() {
             <div className="flex justify-center py-12">
               <LoadingSpinner size="lg" />
             </div>
-          ) : animals.length > 0 ? (
+          ) : animals.length ? (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
-                {animals.map((animal) => (
-                  <AnimalCard key={animal.id} animal={animal} />
+                {animals.map((a) => (
+                  <AnimalCard key={a.id} animal={a} />
                 ))}
               </div>
 
@@ -253,7 +235,7 @@ export default function AnimalsPage() {
                 <div className="flex justify-center space-x-2">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
                   >
                     Previous
@@ -263,7 +245,7 @@ export default function AnimalsPage() {
                   </span>
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
                   >
                     Next
@@ -278,7 +260,7 @@ export default function AnimalsPage() {
               </div>
               <h3 className="text-lg font-medium mb-2">No animals found</h3>
               <p className="text-muted-foreground mb-6">
-                {searchTerm || Object.keys(filters).length > 0
+                {searchTerm || Object.keys(filters).length
                   ? "Try adjusting your search or filters"
                   : "Be the first to register an animal"}
               </p>

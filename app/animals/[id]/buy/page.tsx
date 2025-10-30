@@ -262,9 +262,6 @@ export default function BuyAnimalPage() {
                         <p className="font-medium">
                           {animal.owner.firstName} {animal.owner.lastName}
                         </p>
-                        <p className="text-sm text-muted-foreground">
-                          Member since {new Date(animal.owner.createdAt).getFullYear()}
-                        </p>
                       </div>
                     </div>
                   </CardContent>

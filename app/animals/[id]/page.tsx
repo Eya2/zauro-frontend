@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { useParams, useRouter } from "next/navigation"
+import Link from "next/link"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
@@ -12,7 +13,26 @@ import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import type { Animal } from "@/lib/types"
+import { useToast } from "@/hooks/use-toast"
+
+/* ---------- shadcn Dialog & form ---------- */
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import { Textarea } from "@/components/ui/textarea"
+
+/* ---------- types ---------- */
+import type { Animal, UpdateAnimalDto } from "@/lib/types"
+
+/* ---------- icons ---------- */
 import {
   ArrowLeft,
   Edit,
@@ -26,76 +46,107 @@ import {
   Copy,
   ExternalLink,
 } from "lucide-react"
-import Link from "next/link"
-import { useToast } from "@/hooks/use-toast"
+import { FileUploader } from "./FileUploader"
 
 export default function AnimalDetailPage() {
   const params = useParams()
   const router = useRouter()
   const { user } = useAuth()
   const { toast } = useToast()
+  const animalId = params.id as string
+
+  /* ---------- data ---------- */
   const [animal, setAnimal] = useState<Animal | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
 
-  const animalId = params.id as string
+  /* ---------- edit modal ---------- */
+  const [editOpen, setEditOpen] = useState(false)
+  const [editData, setEditData] = useState<UpdateAnimalDto>({})
+  const [saving, setSaving] = useState(false)
 
+  /* ---------- delete modal ---------- */
+  const [delOpen, setDelOpen] = useState(false)
+
+  /* ---------- fetch ---------- */
   useEffect(() => {
-    if (animalId) {
-      fetchAnimal()
-    }
+    if (animalId) fetchAnimal()
   }, [animalId])
 
   const fetchAnimal = async () => {
     try {
       setLoading(true)
       const res = await api.getAnimal(animalId)
-      console.log('>>> getAnimal raw response', res) // ← ajoute ça
-      if (!res || typeof res !== 'object') {
-        throw new Error('Empty response from server')
-      }
-      
       setAnimal(res)
     } catch (err: any) {
-      console.error('>>> getAnimal catch', err) // ← et ça
-      setError(err.message || 'Failed to load animal details')
+      setError(err.message || "Failed to load animal details")
     } finally {
       setLoading(false)
     }
   }
 
-  const handleDelete = async () => {
-    if (!animal || !window.confirm("Are you sure you want to delete this animal? This action cannot be undone.")) {
-      return
-    }
+  /* ---------- pré-remplissage ---------- */
+  useEffect(() => {
+    if (!animal) return
+    setEditData({
+      name: animal.name,
+      species: animal.species,
+      gender: animal.gender,
+      breed: animal.breed ?? undefined,
+      age: animal.age ?? undefined,
+      description: animal.description ?? undefined,
+      aiPredictionValue: animal.aiPredictionValue ?? undefined,
+    })
+  }, [animal])
 
+  /* ---------- save ---------- */
+  const handleSave = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!animal) return
+    setSaving(true)
+    try {
+      const updated = await api.updateAnimal(animal.id, editData)
+      setAnimal(updated)
+      toast({ title: "Saved", description: "Animal updated successfully." })
+      setEditOpen(false)
+    } catch (err: any) {
+      toast({
+        title: "Update failed",
+        description: err.response?.data?.message || "Could not update animal.",
+        variant: "destructive",
+      })
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  /* ---------- delete ---------- */
+  const handleDelete = async () => {
+    setDelOpen(false)
+    if (!animal) return
     try {
       await api.deleteAnimal(animal.id)
-      toast({
-        title: "Animal deleted",
-        description: "The animal has been successfully deleted.",
-      })
+      toast({ title: "Deleted", description: "Animal removed." })
       router.push("/animals")
     } catch (err: any) {
       toast({
         title: "Delete failed",
-        description: err.response?.data?.message || "Failed to delete animal.",
+        description: err.response?.data?.message || "Could not delete animal.",
         variant: "destructive",
       })
     }
   }
 
+  /* ---------- utils ---------- */
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
-    toast({
-      title: "Copied!",
-      description: `${label} copied to clipboard.`,
-    })
+    toast({ title: "Copied", description: `${label} copied to clipboard.` })
   }
 
   const isOwner = user && animal && user.id === animal.ownerId
 
-  if (loading) {
+  /* ---------- loading / error ---------- */
+  if (loading)
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background">
@@ -106,16 +157,15 @@ export default function AnimalDetailPage() {
         </div>
       </ProtectedRoute>
     )
-  }
 
-  if (error || !animal) {
+  if (error || !animal)
     return (
       <ProtectedRoute>
         <div className="min-h-screen bg-background">
           <Navbar />
           <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <Alert variant="destructive">
-              <AlertDescription>{error || "Animal not found or access denied"}</AlertDescription>
+              <AlertDescription>{error || "Animal not found"}</AlertDescription>
             </Alert>
             <Button asChild className="mt-4">
               <Link href="/animals">
@@ -127,15 +177,14 @@ export default function AnimalDetailPage() {
         </div>
       </ProtectedRoute>
     )
-  }
 
+  /* ---------- render ---------- */
   return (
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
         <Navbar />
-
         <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
+          {/* header */}
           <div className="flex items-center justify-between mb-8">
             <Button variant="ghost" asChild>
               <Link href="/animals">
@@ -154,13 +203,11 @@ export default function AnimalDetailPage() {
               </Button>
               {isOwner && (
                 <>
-                  <Button variant="outline" size="sm" asChild>
-                    <Link href={`/animals/${animal.id}/edit`}>
-                      <Edit className="h-4 w-4 mr-2" />
-                      Edit
-                    </Link>
+                  <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
+                    <Edit className="h-4 w-4 mr-2" />
+                    Edit
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={handleDelete}>
+                  <Button variant="destructive" size="sm" onClick={() => setDelOpen(true)}>
                     <Trash2 className="h-4 w-4 mr-2" />
                     Delete
                   </Button>
@@ -170,9 +217,9 @@ export default function AnimalDetailPage() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Main Content */}
+            {/* main */}
             <div className="lg:col-span-2 space-y-6">
-              {/* Animal Image */}
+              {/* image */}
               <Card>
                 <CardContent className="p-0">
                   <div className="aspect-video relative overflow-hidden rounded-lg">
@@ -197,41 +244,39 @@ export default function AnimalDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Animal Details */}
+              {/* details */}
               <Card>
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
                       <CardTitle className="text-2xl">{animal.name}</CardTitle>
                       <CardDescription className="text-lg mt-1">
-                        {animal.species} {animal.breed && `• ${animal.breed}`}{" "}
-                        {animal.age && `• ${animal.age} years old`}
+                        {animal.species} {animal.breed && `• ${animal.breed}`} {animal.age && `• ${animal.age} years old`}
                       </CardDescription>
                     </div>
-                    {animal.aiPredictionValue && (
-                      <div className="text-right">
-                        <p className="text-sm text-muted-foreground">AI Predicted Value</p>
-                        <p className="text-xl font-bold flex items-center">
-                          <Coins className="h-5 w-5 mr-1" />
-                          {Number.parseFloat(animal.aiPredictionValue).toFixed(0)} HBAR
-                        </p>
-                      </div>
-                    )}
+                    <div className="text-right">
+                      <p className="text-sm text-muted-foreground">AI Predicted Value</p>
+                      <p className="text-xl font-bold flex items-center">
+                        <Coins className="h-5 w-5 mr-1" />
+                        {animal.aiPredictionValue != null
+                          ? Number(animal.aiPredictionValue).toFixed(0)
+                          : "—"}{" "}
+                        HBAR
+                      </p>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
                   {animal.description && (
-                    <div className="space-y-4">
-                      <div>
-                        <h3 className="font-medium mb-2">Description</h3>
-                        <p className="text-muted-foreground leading-relaxed">{animal.description}</p>
-                      </div>
+                    <div>
+                      <h3 className="font-medium mb-2">Description</h3>
+                      <p className="text-muted-foreground leading-relaxed">{animal.description}</p>
                     </div>
                   )}
                 </CardContent>
               </Card>
 
-              {/* Tabs */}
+              {/* tabs */}
               <Tabs defaultValue="details" className="w-full">
                 <TabsList>
                   <TabsTrigger value="details">Details</TabsTrigger>
@@ -365,9 +410,9 @@ export default function AnimalDetailPage() {
               </Tabs>
             </div>
 
-            {/* Sidebar */}
+            {/* sidebar */}
             <div className="space-y-6">
-              {/* Trading Actions */}
+              {/* trading */}
               <Card>
                 <CardHeader>
                   <CardTitle>Trading</CardTitle>
@@ -381,13 +426,13 @@ export default function AnimalDetailPage() {
                         <p className="text-2xl font-bold text-green-700 dark:text-green-300">Listed</p>
                       </div>
                       {!isOwner && (
-  <Button asChild className="w-full">
-    <Link href={`/animals/${animal.id}/buy`}>
-      <ShoppingCart className="h-4 w-4 mr-2" />
-      Buy Now
-    </Link>
-  </Button>
-)}
+                        <Button asChild className="w-full">
+                          <Link href={`/animals/${animal.id}/buy`}>
+                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            Buy Now
+                          </Link>
+                        </Button>
+                      )}
                     </div>
                   ) : (
                     <div className="space-y-4">
@@ -405,7 +450,7 @@ export default function AnimalDetailPage() {
                 </CardContent>
               </Card>
 
-              {/* Owner Information */}
+              {/* owner */}
               <Card>
                 <CardHeader>
                   <CardTitle>Owner</CardTitle>
@@ -419,9 +464,7 @@ export default function AnimalDetailPage() {
                       <p className="font-medium">
                         {animal.owner ? `${animal.owner.firstName} ${animal.owner.lastName}` : "Unknown Owner"}
                       </p>
-                      <p className="text-sm text-muted-foreground">
-                        Member since {animal.owner ? new Date(animal.owner.createdAt).getFullYear() : "N/A"}
-                      </p>
+                      <p className="text-sm text-muted-foreground">{animal.owner?.email || "No contact info"}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -429,6 +472,157 @@ export default function AnimalDetailPage() {
             </div>
           </div>
         </main>
+        {/* ---------- EDIT MODAL ---------- */}
+<Dialog open={editOpen} onOpenChange={setEditOpen}>
+  <DialogContent className="sm:max-w-2xl">
+    <DialogHeader>
+      <DialogTitle>Edit animal</DialogTitle>
+      <DialogDescription>Modify the information below and save.</DialogDescription>
+    </DialogHeader>
+
+    <form onSubmit={handleSave} className="grid gap-4 py-2">
+      {/* ------- basic fields (unchanged) ------- */}
+      <div className="grid grid-cols-2 gap-4">
+        <div className="col-span-2">
+          <Label>Name</Label>
+          <Input
+            value={editData.name || ""}
+            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+            required
+          />
+        </div>
+
+        <div>
+          <Label>Species</Label>
+          <Select
+            value={editData.species || ""}
+            onValueChange={(v) => setEditData({ ...editData, species: v as any })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pick a species" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="COW">Cow</SelectItem>
+              <SelectItem value="SHEEP">Sheep</SelectItem>
+              <SelectItem value="GOAT">Goat</SelectItem>
+              <SelectItem value="OTHER">Other</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Gender</Label>
+          <Select
+            value={editData.gender || ""}
+            onValueChange={(v) => setEditData({ ...editData, gender: v as any })}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Pick a gender" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="MALE">Male</SelectItem>
+              <SelectItem value="FEMALE">Female</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        <div>
+          <Label>Breed</Label>
+          <Input
+            value={editData.breed || ""}
+            onChange={(e) => setEditData({ ...editData, breed: e.target.value })}
+          />
+        </div>
+
+        <div>
+          <Label>Age (years)</Label>
+          <Input
+            type="number"
+            value={editData.age || ""}
+            onChange={(e) => setEditData({ ...editData, age: Number(e.target.value) })}
+          />
+        </div>
+
+        <div className="col-span-2">
+          <Label>Description</Label>
+          <Textarea
+            value={editData.description || ""}
+            onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+            rows={3}
+          />
+        </div>
+
+        <div className="col-span-2">
+          <Label>AI Predicted Value (HBAR)</Label>
+          <Input
+            type="number"
+            step="0.01"
+            value={editData.aiPredictionValue || ""}
+            onChange={(e) => setEditData({ ...editData, aiPredictionValue: Number(e.target.value) })}
+          />
+        </div>
+      </div>
+
+      {/* ------- NEW : IMAGE UPLOAD ------- */}
+      <div className="col-span-2">
+        <Label>Animal Image</Label>
+        <FileUploader
+          accept="image/*"
+          onUpload={async (file) => {
+            const { imageUrl } = await api.uploadAnimalImage(animal!.id, file)
+            setAnimal((prev) => (prev ? { ...prev, imageUrl } : prev))
+            toast({ title: "Image uploaded", description: "Animal picture updated." })
+          }}
+        />
+      </div>
+
+      {/* ------- NEW : VET RECORD UPLOAD ------- */}
+      <div className="col-span-2">
+        <Label>Veterinary Record</Label>
+        <FileUploader
+          accept=".pdf,.doc,.docx"
+          onUpload={async (file) => {
+            const { vetRecordUrl } = await api.uploadVetRecord(animal!.id, file)
+            setAnimal((prev) => (prev ? { ...prev, vetRecordUrl } : prev))
+            toast({ title: "Record uploaded", description: "Vet record updated." })
+          }}
+        />
+      </div>
+
+      <DialogFooter className="gap-2">
+        <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
+          Cancel
+        </Button>
+        <Button type="submit" disabled={saving}>
+          {saving && <LoadingSpinner className="mr-2 h-4 w-4" />}
+          Save
+        </Button>
+      </DialogFooter>
+    </form>
+  </DialogContent>
+</Dialog>
+
+        {/* ---------- DELETE CONFIRMATION MODAL ---------- */}
+        <Dialog open={delOpen} onOpenChange={setDelOpen}>
+          <DialogContent className="sm:max-w-md">
+            <DialogHeader>
+              <DialogTitle>Confirm deletion</DialogTitle>
+              <DialogDescription>
+                Are you sure you want to permanently delete <strong>{animal.name}</strong>?
+                This action cannot be undone.
+              </DialogDescription>
+            </DialogHeader>
+
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setDelOpen(false)}>
+                Cancel
+              </Button>
+              <Button variant="destructive" onClick={handleDelete}>
+                Delete
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
       </div>
     </ProtectedRoute>
   )

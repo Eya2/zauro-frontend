@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Progress } from "@/components/ui/progress"
-import type { AnimalSpecies } from "@/lib/types"
+import type { AnimalSpecies, AnimalGender } from "@/lib/types"
 import { ImageIcon, FileText, Sparkles, ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
 
@@ -25,11 +25,12 @@ export default function CreateAnimalPage() {
   const [currentStep, setCurrentStep] = useState<Step>("details")
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState("")
-  const [createdAnimal, setCreatedAnimal] = useState<any>(null)
+  const [created, setCreated] = useState<any>(null)
 
-  const [formData, setFormData] = useState({
+  const [form, setForm] = useState({
     name: "",
     species: "" as AnimalSpecies,
+    gender: "" as AnimalGender,
     breed: "",
     age: "",
     description: "",
@@ -41,105 +42,64 @@ export default function CreateAnimalPage() {
   })
 
   const speciesOptions: { value: AnimalSpecies; label: string }[] = [
-    { value: "DOG", label: "Dog" },
-    { value: "CAT", label: "Cat" },
-    { value: "BIRD", label: "Bird" },
-    { value: "FISH", label: "Fish" },
-    { value: "REPTILE", label: "Reptile" },
+   
+    { value: "COW", label: "Cow" },
+    { value: "SHEEP", label: "Sheep" },
+    { value: "GOAT", label: "Goat" },
     { value: "OTHER", label: "Other" },
   ]
 
   const steps = [
-    { id: "details", title: "Animal Details", description: "Basic information about your animal" },
-    { id: "images", title: "Photos", description: "Upload animal photos (optional)" },
-    { id: "documents", title: "Documents", description: "Veterinary records (optional)" },
+    { id: "details", title: "Animal Details", description: "Basic information" },
+    { id: "images", title: "Photos", description: "Upload photos (optional)" },
+    { id: "documents", title: "Documents", description: "Vet records (optional)" },
     { id: "minting", title: "NFT Minting", description: "Creating blockchain NFT" },
-    { id: "success", title: "Complete", description: "Animal registered successfully" },
+    { id: "success", title: "Complete", description: "Animal registered" },
   ]
 
-  const currentStepIndex = steps.findIndex((step) => step.id === currentStep)
+  const currentStepIndex = steps.findIndex((s) => s.id === currentStep)
   const progress = ((currentStepIndex + 1) / steps.length) * 100
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    setFormData((prev) => ({
-      ...prev,
-      [e.target.name]: e.target.value,
-    }))
-  }
-
-  const handleSpeciesChange = (value: AnimalSpecies) => {
-    setFormData((prev) => ({
-      ...prev,
-      species: value,
-    }))
-  }
-
-  const handleFileChange = (type: "image" | "vetRecord", file: File | null) => {
-    setFiles((prev) => ({
-      ...prev,
-      [type]: file,
-    }))
-  }
-
-  const validateStep = (step: Step): boolean => {
-    switch (step) {
-      case "details":
-        // REQUIS : name, species, breed, age
-        return !!(formData.name && formData.species && formData.breed && formData.age)
-      case "images":
-      case "documents":
-        return true // optional
-      default:
-        return true
-    }
-  }
-
   const handleNext = () => {
-    if (!validateStep(currentStep)) {
+    if (currentStep === "details" && !(form.name && form.species && form.gender && form.breed && form.age)) {
       setError("Please fill in all required fields")
       return
     }
     setError("")
-    const stepOrder: Step[] = ["details", "images", "documents", "minting", "success"]
-    const currentIndex = stepOrder.indexOf(currentStep)
-    if (currentIndex < stepOrder.length - 1) {
-      const nextStep = stepOrder[currentIndex + 1]
-      if (nextStep === "minting") {
-        handleSubmit()
-      } else {
-        setCurrentStep(nextStep)
-      }
+    const order: Step[] = ["details", "images", "documents", "minting", "success"]
+    const idx = order.indexOf(currentStep)
+    if (idx < order.length - 1) {
+      const next = order[idx + 1]
+      if (next === "minting") handleSubmit()
+      else setCurrentStep(next)
     }
   }
-
   const handleBack = () => {
-    const stepOrder: Step[] = ["details", "images", "documents", "minting", "success"]
-    const currentIndex = stepOrder.indexOf(currentStep)
-    if (currentIndex > 0) setCurrentStep(stepOrder[currentIndex - 1])
+    const order: Step[] = ["details", "images", "documents", "minting", "success"]
+    const idx = order.indexOf(currentStep)
+    if (idx > 0) setCurrentStep(order[idx - 1])
   }
 
   const handleSubmit = async () => {
     setLoading(true)
     setError("")
     setCurrentStep("minting")
-
     try {
-      const submitData = new FormData()
-      submitData.append("name", formData.name)
-      submitData.append("species", formData.species)
-      submitData.append("breed", formData.breed)
-      submitData.append("age", formData.age)
-      if (formData.description) submitData.append("description", formData.description)
+      const data = new FormData()
+      data.append("name", form.name)
+      data.append("species", form.species)
+      data.append("gender", form.gender)
+      data.append("breed", form.breed)
+      data.append("age", form.age)
+      if (form.description) data.append("description", form.description)
+      if (files.image) data.append("image", files.image)
+      if (files.vetRecord) data.append("vetRecord", files.vetRecord)
 
-      // ✅ fichiers vraiment optionnels
-      if (files.image) submitData.append("image", files.image)
-      if (files.vetRecord) submitData.append("vetRecord", files.vetRecord)
-
-      const animal = await api.createAnimal(submitData)
-      setCreatedAnimal(animal)
+      const animal = await api.createAnimal(data)
+      setCreated(animal)
       setCurrentStep("success")
     } catch (err: any) {
-      setError(err.response?.data?.message || "Failed to create animal. Please try again.")
+      setError(err.response?.data?.message || "Failed to create animal")
       setCurrentStep("documents")
     } finally {
       setLoading(false)
@@ -161,7 +121,7 @@ export default function CreateAnimalPage() {
       <input
         type="file"
         accept={accept}
-        onChange={(e) => handleFileChange(type, e.target.files?.[0] || null)}
+        onChange={(e) => setFiles((p) => ({ ...p, [type]: e.target.files?.[0] || null }))}
         className="hidden"
         id={`${type}-upload`}
       />
@@ -191,9 +151,7 @@ export default function CreateAnimalPage() {
     <ProtectedRoute>
       <div className="min-h-screen bg-background">
         <Navbar />
-
         <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
           <div className="mb-8">
             <div className="flex items-center space-x-4 mb-4">
               <Button variant="ghost" size="sm" asChild>
@@ -207,14 +165,11 @@ export default function CreateAnimalPage() {
             <p className="text-muted-foreground mt-2">Create an NFT for your animal on the blockchain</p>
           </div>
 
-          {/* Progress */}
           <Card className="mb-8">
             <CardContent className="p-6">
               <div className="space-y-4">
                 <div className="flex justify-between text-sm">
-                  <span>
-                    Step {currentStepIndex + 1} of {steps.length}
-                  </span>
+                  <span>Step {currentStepIndex + 1} of {steps.length}</span>
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
                 <Progress value={progress} className="w-full" />
@@ -232,90 +187,85 @@ export default function CreateAnimalPage() {
             </Alert>
           )}
 
-          {/* Step Content */}
           <Card>
             <CardContent className="p-6">
               {currentStep === "details" && (
                 <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Animal Details</h2>
-                    <div className="space-y-4">
+                  <h2 className="text-xl font-semibold mb-4">Animal Details</h2>
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label>Name *</Label>
+                      <Input
+                        name="name"
+                        value={form.name}
+                        onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
+                        placeholder="Enter animal name"
+                        required
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Species *</Label>
+                      <Select value={form.species} onValueChange={(v) => setForm((p) => ({ ...p, species: v as AnimalSpecies }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select species" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {speciesOptions.map((o) => (
+                            <SelectItem key={o.value} value={o.value}>
+                              {o.label}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Gender *</Label>
+                      <Select value={form.gender} onValueChange={(v) => setForm((p) => ({ ...p, gender: v as AnimalGender }))}>
+                        <SelectTrigger>
+                          <SelectValue placeholder="Select gender" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="MALE">Male</SelectItem>
+                          <SelectItem value="FEMALE">Female</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="name">
-                          Animal Name <span className="text-destructive">*</span>
-                        </Label>
+                        <Label>Breed *</Label>
                         <Input
-                          id="name"
-                          name="name"
-                          value={formData.name}
-                          onChange={handleInputChange}
-                          placeholder="Enter animal name"
+                          name="breed"
+                          value={form.breed}
+                          onChange={(e) => setForm((p) => ({ ...p, breed: e.target.value }))}
+                          placeholder="e.g. Holstein"
                           required
                         />
                       </div>
-
                       <div className="space-y-2">
-                        <Label htmlFor="species">
-                          Species <span className="text-destructive">*</span>
-                        </Label>
-                        <Select value={formData.species} onValueChange={handleSpeciesChange}>
-                          <SelectTrigger>
-                            <SelectValue placeholder="Select species" />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {speciesOptions.map((option) => (
-                              <SelectItem key={option.value} value={option.value}>
-                                {option.label}
-                              </SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-
-                      <div className="grid grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                          <Label htmlFor="breed">
-                            Breed <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            id="breed"
-                            name="breed"
-                            value={formData.breed}
-                            onChange={handleInputChange}
-                            placeholder="e.g., Golden Retriever"
-                            required
-                          />
-                        </div>
-
-                        <div className="space-y-2">
-                          <Label htmlFor="age">
-                            Age (years) <span className="text-destructive">*</span>
-                          </Label>
-                          <Input
-                            id="age"
-                            name="age"
-                            type="number"
-                            value={formData.age}
-                            onChange={handleInputChange}
-                            placeholder="e.g., 3"
-                            min="0"
-                            max="50"
-                            required
-                          />
-                        </div>
-                      </div>
-
-                      <div className="space-y-2">
-                        <Label htmlFor="description">Description</Label>
-                        <Textarea
-                          id="description"
-                          name="description"
-                          value={formData.description}
-                          onChange={handleInputChange}
-                          placeholder="Describe your animal's personality, health, and any special characteristics..."
-                          rows={4}
+                        <Label>Age (years) *</Label>
+                        <Input
+                          type="number"
+                          min="0"
+                          max="50"
+                          value={form.age}
+                          onChange={(e) => setForm((p) => ({ ...p, age: e.target.value }))}
+                          placeholder="e.g. 3"
+                          required
                         />
                       </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label>Description</Label>
+                      <Textarea
+                        value={form.description}
+                        onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
+                        placeholder="Describe your animal..."
+                        rows={4}
+                      />
                     </div>
                   </div>
                 </div>
@@ -323,84 +273,54 @@ export default function CreateAnimalPage() {
 
               {currentStep === "images" && (
                 <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Animal Photos</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Upload a clear photo of your animal. This will be used for the NFT image.
-                    </p>
-                    <FileUpload
-                      type="image"
-                      accept="image/*"
-                      title="Upload Animal Photo"
-                      description="JPG, PNG, or GIF up to 10 MB (optional)"
-                    />
-                  </div>
+                  <h2 className="text-xl font-semibold mb-4">Animal Photos</h2>
+                  <p className="text-muted-foreground mb-6">Upload a clear photo of your animal.</p>
+                  <FileUpload
+                    type="image"
+                    accept="image/*"
+                    title="Upload Animal Photo"
+                    description="JPG, PNG, GIF up to 10 MB (optional)"
+                  />
                 </div>
               )}
 
               {currentStep === "documents" && (
                 <div className="space-y-6">
-                  <div>
-                    <h2 className="text-xl font-semibold mb-4">Veterinary Records</h2>
-                    <p className="text-muted-foreground mb-6">
-                      Upload veterinary records, health certificates, or other relevant documents (optional).
-                    </p>
-                    <FileUpload
-                      type="vetRecord"
-                      accept=".pdf,.doc,.docx"
-                      title="Upload Veterinary Records"
-                      description="PDF or DOC files up to 10 MB (optional)"
-                    />
-                  </div>
+                  <h2 className="text-xl font-semibold mb-4">Veterinary Records</h2>
+                  <p className="text-muted-foreground mb-6">Upload vet records or health certificates (optional).</p>
+                  <FileUpload
+                    type="vetRecord"
+                    accept=".pdf,.doc,.docx"
+                    title="Upload Veterinary Records"
+                    description="PDF or DOC up to 10 MB (optional)"
+                  />
                 </div>
               )}
 
               {currentStep === "minting" && (
                 <div className="text-center space-y-6">
-                  <div className="w-24 h-24 bg-primary/10 rounded-full flex items-center justify-center mx-auto">
-                    <Sparkles className="h-12 w-12 text-primary animate-pulse" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">Creating Your NFT</h2>
-                    <p className="text-muted-foreground">
-                      We're minting your animal as an NFT on the Hedera blockchain. This may take a few moments...
-                    </p>
-                  </div>
+                  <Sparkles className="h-12 w-12 text-primary animate-pulse mx-auto" />
+                  <h2 className="text-xl font-semibold">Creating Your NFT</h2>
+                  <p className="text-muted-foreground">Minting on Hedera blockchain – please wait...</p>
                   <LoadingSpinner size="lg" />
                 </div>
               )}
 
               {currentStep === "success" && (
                 <div className="text-center space-y-6">
-                  <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center mx-auto">
-                    <CheckCircle className="h-12 w-12 text-green-500" />
-                  </div>
-                  <div>
-                    <h2 className="text-xl font-semibold mb-2">Animal Registered Successfully!</h2>
-                    <p className="text-muted-foreground">
-                      Your animal has been registered and minted as an NFT on the blockchain.
-                    </p>
-                  </div>
-                  {createdAnimal && (
-                    <div className="bg-muted p-4 rounded-lg text-left">
-                      <h3 className="font-medium mb-2">NFT Details:</h3>
-                      <div className="space-y-1 text-sm">
-                        <p>
-                          <span className="text-muted-foreground">Token ID:</span> {createdAnimal.tokenId}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Serial Number:</span>{" "}
-                          {createdAnimal.tokenSerialNumber}
-                        </p>
-                        <p>
-                          <span className="text-muted-foreground">Name:</span> {createdAnimal.name}
-                        </p>
-                      </div>
+                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
+                  <h2 className="text-xl font-semibold">Animal Registered Successfully!</h2>
+                  <p className="text-muted-foreground">Your animal has been minted as an NFT.</p>
+                  {created && (
+                    <div className="bg-muted p-4 rounded-lg text-left space-y-1 text-sm">
+                      <p><span className="text-muted-foreground">Token ID:</span> {created.tokenId}</p>
+                      <p><span className="text-muted-foreground">Serial:</span> {created.tokenSerialNumber}</p>
+                      <p><span className="text-muted-foreground">Name:</span> {created.name}</p>
                     </div>
                   )}
                   <div className="flex space-x-4 justify-center">
                     <Button asChild>
-                      <Link href={`/animals/${createdAnimal?.id}`}>View Animal</Link>
+                      <Link href={`/animals/${created?.id}`}>View Animal</Link>
                     </Button>
                     <Button variant="outline" asChild>
                       <Link href="/animals">Back to Animals</Link>
@@ -411,7 +331,6 @@ export default function CreateAnimalPage() {
             </CardContent>
           </Card>
 
-          {/* Navigation */}
           {currentStep !== "minting" && currentStep !== "success" && (
             <div className="flex justify-between mt-6">
               <Button variant="outline" onClick={handleBack} disabled={currentStep === "details"}>
