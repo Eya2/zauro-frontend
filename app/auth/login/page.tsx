@@ -16,31 +16,39 @@ import { Eye, EyeOff, Mail, Lock } from "lucide-react"
 
 export default function LoginPage() {
   const router = useRouter()
-  const { login } = useAuth()
+  const { login, user } = useAuth()   // ← 1.  appel unique, en haut
 
-  const [formData, setFormData] = useState({ email: "", password: "" })
+  const [formData, setFormData] = useState({ email: '', password: '' })
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
-  const [error, setError] = useState("")
+  const [error, setError] = useState('')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
-    setFormData((prev) => ({ ...prev, [e.target.name]: e.target.value }))
+    setFormData(prev => ({ ...prev, [e.target.name]: e.target.value }))
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-    setError("")
+    setError('')
 
     try {
-      await login(formData.email, formData.password)
-      router.push("/dashboard")
+      // 2. login renvoie l’utilisateur complet
+      const loggedUser = await login(formData.email, formData.password)
+
+      // 3. redirection selon le rôle
+      if (loggedUser.role === 'ADMIN') {
+        router.push('/admin')
+      } else if (loggedUser.role === 'EMPLOYEE_TRADER') {
+        router.push('/dashboard')
+      } else {
+        router.push('/dashboard')   // HR_MANAGER ou autre
+      }
     } catch (err: any) {
-      setError(err.response?.data?.message || "Login failed. Please check your credentials.")
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.')
     } finally {
       setLoading(false)
     }
   }
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16] p-4">
       <div className="w-full max-w-lg">

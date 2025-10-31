@@ -23,6 +23,7 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import type { User, Animal, Trade } from "@/lib/types"
 import Image from "next/image"
+import { AdminNavbar } from "@/components/layout/admin-navbar" // 1. import navbar
 
 export default function AdminPage() {
   const [stats, setStats] = useState({
@@ -113,9 +114,9 @@ export default function AdminPage() {
 
   return (
     <ProtectedRoute requiredRole="ADMIN">
+      <AdminNavbar /> {/* 2. navbar placée ici */}
       <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16] p-4">
         <div className="max-w-7xl mx-auto">
-
           {/* Header */}
           <div className="flex items-center gap-4 mb-10 text-center justify-center animate-fade-in">
             <div className="w-16 h-16 bg-white/20 rounded-full flex items-center justify-center backdrop-blur-md border border-white/30">

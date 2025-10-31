@@ -224,15 +224,16 @@ export default function DashboardPage() {
                   <CardDescription className="text-white/70">Your latest registered animals</CardDescription>
                 </div>
                 <Button
-                  asChild
-                  size="sm"
-                  className="bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
-                >
-                  <Link href="/animals/create">
-                    <PlusCircle className="h-4 w-4 mr-2 text-white/60" />
-                    Add Animal
-                  </Link>
-                </Button>
+  asChild
+  size="sm"
+  className="bg-white/15 text-white border border-white/20 hover:bg-white/25 backdrop-blur-xl transition rounded-xl"
+>
+  <Link href="/animals/create">
+    <PlusCircle className="h-4 w-4 mr-2" />
+    Add Animal
+  </Link>
+</Button>
+
               </CardHeader>
               <CardContent>
                 {loading ? (
@@ -303,16 +304,16 @@ export default function DashboardPage() {
                   <CardDescription className="text-white/70">Your latest trading activity</CardDescription>
                 </div>
                 <Button
-                  asChild
-                  size="sm"
-                  variant="outline"
-                  className="border-white/20 text-white hover:bg-white/10"
-                >
-                  <Link href="/trades">
-                    <ShoppingCart className="h-4 w-4 mr-2 text-white/60" />
-                    View All
-                  </Link>
-                </Button>
+  asChild
+  size="sm"
+  className="bg-white/15 text-white border border-white/20 hover:bg-white/25 backdrop-blur-xl transition rounded-xl"
+>
+  <Link href="/trades">
+    <ShoppingCart className="h-4 w-4 mr-2" />
+    View All
+  </Link>
+</Button>
+
               </CardHeader>
               <CardContent>
                 {loading ? (

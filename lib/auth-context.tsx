@@ -18,8 +18,8 @@ interface RegisterDTO {
 interface AuthContextType {
   user: User | null
   loading: boolean
-  login: (email: string, password: string) => Promise<void>
-  register: (data: RegisterDTO) => Promise<void>   // ← updated signature
+  login: (email: string, password: string) => Promise<User>
+  register: (data: RegisterDTO) => Promise<void>
   logout: () => void
   refreshUser: () => Promise<void>
 }
@@ -61,14 +61,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initAuth()
   }, [])
 
-  /* ----------  LOGIN  ---------- */
-  const login = async (email: string, password: string) => {
-    const response = await api.login({ email, password })
-    localStorage.setItem("accessToken", response.accessToken)
-    localStorage.setItem("refreshToken", response.refreshToken)
-    localStorage.setItem("user", JSON.stringify(response.user))
-    setUser(response.user)
-  }
+ /* ----------  LOGIN  ---------- */
+const login = async (email: string, password: string): Promise<User> => {
+  const response = await api.login({ email, password })
+  localStorage.setItem("accessToken", response.accessToken)
+  localStorage.setItem("refreshToken", response.refreshToken)
+  localStorage.setItem("user", JSON.stringify(response.user))
+  setUser(response.user)
+  return response.user // ← ajoutée
+}
 
   /* ----------  REGISTER  ---------- */
   const register = async (data: RegisterDTO) => {
