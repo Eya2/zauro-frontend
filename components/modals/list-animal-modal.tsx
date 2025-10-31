@@ -50,7 +50,7 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
       setLoading(true)
       await api.listAnimalForTrade({
         animalId: animal.id,
-        price: Number(price),
+        price: Number(Number(animal.aiPredictionValue).toFixed(0)),
         currency: currency,
       })
 
@@ -125,11 +125,12 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
                 step="0.01"
                 min="0"
                 placeholder="Enter price"
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
+                value={Number(animal.aiPredictionValue).toFixed(0)}
+                onChange={(e) => setPrice(Number(animal.aiPredictionValue).toFixed(0))}
                 className="pl-10 bg-white/15 text-white border-white/20 placeholder:text-white/50"
                 required
                 disabled={loading}
+                readOnly
               />
             </div>
           </div>
