@@ -1,19 +1,35 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import { api } from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { Navbar } from "@/components/layout/navbar"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import type { Trade, TradeStatus, TradeFilters } from "@/lib/types"
-import { Search, Filter, Eye, Clock, CheckCircle, XCircle, AlertCircle, TrendingUp, Coins } from "lucide-react"
+import {
+  Search,
+  Filter,
+  Eye,
+  Clock,
+  CheckCircle,
+  XCircle,
+  AlertCircle,
+  TrendingUp,
+  Coins,
+} from "lucide-react"
 import Link from "next/link"
 
 export default function TradesPage() {
@@ -35,6 +51,7 @@ export default function TradesPage() {
     { value: "FAILED", label: "Failed", color: "bg-red-500" },
   ]
 
+  // Fetch trades whenever page, filters, search, or view changes
   useEffect(() => {
     fetchTrades()
   }, [currentPage, filters, searchTerm, viewMode])
@@ -45,10 +62,14 @@ export default function TradesPage() {
       const params = {
         page: currentPage,
         limit: 12,
+        search: searchTerm || undefined,
         filters: {
           ...filters,
           ...(viewMode === "buying" && { buyerId: user?.id }),
           ...(viewMode === "selling" && { sellerId: user?.id }),
+          ...(viewMode === "my-trades" && {
+            $or: [{ buyerId: user?.id }, { sellerId: user?.id }],
+          }),
         },
       }
 
@@ -62,13 +83,13 @@ export default function TradesPage() {
     }
   }
 
-  const handleFilterChange = (key: keyof TradeFilters, value: any) => {
+  const handleFilterChange = useCallback((key: keyof TradeFilters, value: any) => {
     setFilters((prev) => ({
       ...prev,
       [key]: value,
     }))
     setCurrentPage(1)
-  }
+  }, [])
 
   const clearFilters = () => {
     setFilters({})
@@ -78,104 +99,105 @@ export default function TradesPage() {
 
   const getStatusIcon = (status: TradeStatus) => {
     switch (status) {
-      case "PENDING":
-        return <Clock className="h-4 w-4" />
-      case "LISTED":
-        return <TrendingUp className="h-4 w-4" />
-      case "IN_PROGRESS":
-        return <AlertCircle className="h-4 w-4" />
-      case "COMPLETED":
-        return <CheckCircle className="h-4 w-4" />
+      case "PENDING": return <Clock className="h-4 w-4" />
+      case "LISTED": return <TrendingUp className="h-4 w-4" />
+      case "IN_PROGRESS": return <AlertCircle className="h-4 w-4" />
+      case "COMPLETED": return <CheckCircle className="h-4 w-4" />
       case "CANCELLED":
       case "FAILED":
         return <XCircle className="h-4 w-4" />
-      default:
-        return <Clock className="h-4 w-4" />
+      default: return <Clock className="h-4 w-4" />
     }
   }
 
   const getStatusColor = (status: TradeStatus) => {
-    const statusOption = statusOptions.find((option) => option.value === status)
-    return statusOption?.color || "bg-gray-500"
+    return statusOptions.find((o) => o.value === status)?.color || "bg-gray-500"
   }
 
   const TradeCard = ({ trade }: { trade: Trade }) => (
-    <Card className="hover:shadow-lg transition-shadow">
-      <CardContent className="p-6">
-        <div className="space-y-4">
-          {/* Header */}
-          <div className="flex items-start justify-between">
-            <div className="flex items-center space-x-3">
+    <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl hover:shadow-[#0288D1]/30 transition-shadow">
+      <CardContent className="p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-14 h-14 rounded-xl bg-white/20 backdrop-blur-md border border-white/30 flex items-center justify-center overflow-hidden">
               <img
                 src={trade.animal?.imageUrl || "/placeholder.svg?height=60&width=60&query=cute animal"}
-                alt={trade.animal?.name || "Animal"}
-                className="w-12 h-12 rounded-lg object-cover"
+                alt={trade.animal?.name}
+                className="w-full h-full object-cover"
               />
-              <div>
-                <h3 className="font-semibold">{trade.animal?.name || "Unknown Animal"}</h3>
-                <p className="text-sm text-muted-foreground">
-                  {trade.animal?.species} {trade.animal?.breed && `• ${trade.animal.breed}`}
-                </p>
-              </div>
-            </div>
-            <Badge
-              variant="secondary"
-              className={`${getStatusColor(trade.status)} text-white flex items-center space-x-1`}
-            >
-              {getStatusIcon(trade.status)}
-              <span>{trade.status}</span>
-            </Badge>
-          </div>
-
-          {/* Price and Currency */}
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Coins className="h-4 w-4 text-muted-foreground" />
-              <span className="text-lg font-bold">
-                {trade.price} {trade.currency}
-              </span>
-            </div>
-            <div className="text-sm text-muted-foreground">{new Date(trade.createdAt).toLocaleDateString()}</div>
-          </div>
-
-          {/* Participants */}
-          <div className="grid grid-cols-2 gap-4 text-sm">
-            <div>
-              <p className="text-muted-foreground">Seller</p>
-              <p className="font-medium">
-                {trade.seller ? `${trade.seller.firstName} ${trade.seller.lastName}` : "Unknown"}
-              </p>
             </div>
             <div>
-              <p className="text-muted-foreground">Buyer</p>
-              <p className="font-medium">
-                {trade.buyer ? `${trade.buyer.firstName} ${trade.buyer.lastName}` : "Not assigned"}
+              <h3 className="font-bold text-white text-lg">{trade.animal?.name || "Unknown Animal"}</h3>
+              <p className="text-sm text-white/70">
+                {trade.animal?.species} {trade.animal?.breed && `• ${trade.animal.breed}`}
               </p>
             </div>
           </div>
+          <Badge
+            variant="secondary"
+            className={`${getStatusColor(trade.status)} text-white flex items-center gap-1 px-3 py-1`}
+          >
+            {getStatusIcon(trade.status)}
+            <span className="font-medium">{trade.status.replace("_", " ")}</span>
+          </Badge>
+        </div>
 
-          {/* Transaction Hash */}
-          {trade.transactionHash && (
-            <div className="text-sm">
-              <p className="text-muted-foreground">Transaction Hash</p>
-              <p className="font-mono text-xs truncate">{trade.transactionHash}</p>
-            </div>
-          )}
+        {/* Price & Date */}
+        <div className="flex items-center justify-between text-white">
+          <div className="flex items-center gap-2">
+            <Coins className="h-5 w-5 text-white/80" />
+            <span className="text-xl font-bold">
+              {trade.price} <span className="text-sm font-normal">{trade.currency}</span>
+            </span>
+          </div>
+          <span className="text-sm text-white/70">
+            {new Date(trade.createdAt).toLocaleDateString()}
+          </span>
+        </div>
 
-          {/* Actions */}
-          <div className="flex space-x-2 pt-2">
-            <Button asChild size="sm" variant="outline" className="flex-1 bg-transparent">
-              <Link href={`/trades/${trade.id}`}>
-                <Eye className="h-4 w-4 mr-2" />
-                View Details
-              </Link>
+        {/* Participants */}
+        <div className="grid grid-cols-2 gap-4 text-sm">
+          <div>
+            <p className="text-white/60">Seller</p>
+            <p className="font-medium text-white">
+              {trade.seller ? `${trade.seller.firstName} ${trade.seller.lastName}` : "—"}
+            </p>
+          </div>
+          <div>
+            <p className="text-white/60">Buyer</p>
+            <p className="font-medium text-white">
+              {trade.buyer ? `${trade.buyer.firstName} ${trade.buyer.lastName}` : "Not assigned"}
+            </p>
+          </div>
+        </div>
+
+        {/* Transaction Hash */}
+        {trade.transactionHash && (
+          <div className="text-xs">
+            <p className="text-white/60">Tx Hash</p>
+            <p className="font-mono text-white/90 truncate">{trade.transactionHash}</p>
+          </div>
+        )}
+
+        {/* Actions */}
+        <div className="flex gap-2 pt-2">
+          <Button
+            asChild
+            size="sm"
+            variant="outline"
+            className="flex-1 bg-white/10 border-white/30 text-white hover:bg-white/20"
+          >
+            <Link href={`/trades/${trade.id}`}>
+              <Eye className="h-4 w-4 mr-2" />
+              View
+            </Link>
+          </Button>
+          {trade.status === "LISTED" && user?.id !== trade.sellerId && (
+            <Button asChild size="sm" className="flex-1 bg-[#093102] text-white hover:bg-[#0A3D04]">
+              <Link href={`/animals/${trade.animalId}/buy`}>Buy Now</Link>
             </Button>
-            {trade.status === "LISTED" && user?.id !== trade.sellerId && (
-              <Button asChild size="sm" className="flex-1">
-                <Link href={`/animals/${trade.id}/buy`}>Buy Now</Link>
-              </Button>
-            )}
-          </div>
+          )}
         </div>
       </CardContent>
     </Card>
@@ -183,94 +205,111 @@ export default function TradesPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16] p-4">
         <Navbar />
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">Trading</h1>
-            <p className="text-muted-foreground mt-2">Browse and manage animal trades on the blockchain</p>
+        <main className="max-w-7xl mx-auto mt-8">
+          {/* Page Header */}
+          <div className="text-center mb-10 animate-fade-in">
+            <h1 className="text-4xl font-bold text-white drop-shadow-md tracking-wide">Trading</h1>
+            <p className="text-white/80 mt-3 text-sm max-w-2xl mx-auto">
+              Browse and manage animal trades on the blockchain — secure, transparent, and immutable.
+            </p>
           </div>
 
-          {/* Filters and Search */}
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                {/* View Mode Tabs */}
-                <Tabs value={viewMode} onValueChange={(value) => setViewMode(value as any)}>
-                  <TabsList>
-                    <TabsTrigger value="all">All Trades</TabsTrigger>
-                    <TabsTrigger value="my-trades">My Trades</TabsTrigger>
-                    <TabsTrigger value="buying">Buying</TabsTrigger>
-                    <TabsTrigger value="selling">Selling</TabsTrigger>
-                  </TabsList>
-                </Tabs>
+          {/* Filters Card */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl mb-8">
+            <CardHeader>
+              <CardTitle className="text-white text-xl">Filters & Search</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-5">
+              {/* Tabs */}
+              <Tabs value={viewMode} onValueChange={(v) => { setViewMode(v as any); setCurrentPage(1) }}>
+                <TabsList className="grid grid-cols-4 w-full bg-white/15 border border-white/20">
+                  <TabsTrigger value="all" className="data-[state=active]:bg-[#093102] data-[state=active]:text-white text-white/80">
+                    All Trades
+                  </TabsTrigger>
+                  <TabsTrigger value="my-trades" className="data-[state=active]:bg-[#093102] data-[state=active]:text-white text-white/80">
+                    My Trades
+                  </TabsTrigger>
+                  <TabsTrigger value="buying" className="data-[state=active]:bg-[#093102] data-[state=active]:text-white text-white/80">
+                    Buying
+                  </TabsTrigger>
+                  <TabsTrigger value="selling" className="data-[state=active]:bg-[#093102] data-[state=active]:text-white text-white/80">
+                    Selling
+                  </TabsTrigger>
+                </TabsList>
+              </Tabs>
 
-                {/* Search and Filters */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search trades..."
-                      value={searchTerm}
-                      onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
-                    />
-                  </div>
-
-                  <Select
-                    value={filters.status?.[0] || ""}
-                    onValueChange={(value) => handleFilterChange("status", value ? [value as TradeStatus] : undefined)}
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Status</SelectItem>
-                      {statusOptions.map((status) => (
-                        <SelectItem key={status.value} value={status.value}>
-                          {status.label}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-
-                  <Select
-                    value={filters.currency?.[0] || ""}
-                    onValueChange={(value) =>
-                      handleFilterChange("currency", value ? [value as "HBAR" | "ZAU"] : undefined)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Currency" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="all">All Currencies</SelectItem>
-                      <SelectItem value="HBAR">HBAR</SelectItem>
-                      <SelectItem value="ZAU">ZAU Token</SelectItem>
-                    </SelectContent>
-                  </Select>
-
-                  <div className="flex space-x-2">
-                    <Button variant="outline" onClick={clearFilters} className="bg-transparent">
-                      <Filter className="h-4 w-4 mr-2" />
-                      Clear
-                    </Button>
-                  </div>
+              {/* Search + Filters Row */}
+              <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-white/50" />
+                  <Input
+                    placeholder="Search trades..."
+                    value={searchTerm}
+                    onChange={(e) => { setSearchTerm(e.target.value); setCurrentPage(1) }}
+                    className="pl-10 bg-white/15 text-white border-white/20 placeholder:text-white/50"
+                  />
                 </div>
+
+               {/* Status filter */}
+<Select
+  value={filters.status?.[0] || "ALL"}
+  onValueChange={(v) =>
+    handleFilterChange("status", v === "ALL" ? undefined : [v as TradeStatus])
+  }
+>
+  <SelectTrigger className="bg-white/15 text-white border-white/20">
+    <SelectValue placeholder="Status" />
+  </SelectTrigger>
+  <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white">
+    <SelectItem value="ALL">All Status</SelectItem>
+    {statusOptions.map((s) => (
+      <SelectItem key={s.value} value={s.value}>
+        {s.label}
+      </SelectItem>
+    ))}
+  </SelectContent>
+</Select>
+
+{/* Currency filter */}
+<Select
+  value={filters.currency?.[0] || "ALL"}
+  onValueChange={(v) =>
+    handleFilterChange("currency", v === "ALL" ? undefined : [v as "HBAR" | "ZAU"])
+  }
+>
+  <SelectTrigger className="bg-white/15 text-white border-white/20">
+    <SelectValue placeholder="Currency" />
+  </SelectTrigger>
+  <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white">
+    <SelectItem value="ALL">All Currencies</SelectItem>
+    <SelectItem value="HBAR">HBAR</SelectItem>
+    <SelectItem value="ZAU">ZAU Token</SelectItem>
+  </SelectContent>
+</Select>
+                <Button
+                  variant="outline"
+                  onClick={clearFilters}
+                  className="bg-white/10 border-white/30 text-white hover:bg-white/20"
+                >
+                  <Filter className="h-4 w-4 mr-2" />
+                  Clear
+                </Button>
               </div>
             </CardContent>
           </Card>
 
-          {/* Trades Grid */}
+          {/* Loading State */}
           {loading ? (
-            <div className="flex justify-center py-12">
-              <LoadingSpinner size="lg" />
+            <div className="flex justify-center py-16">
+              <LoadingSpinner size="lg" className="text-white" />
             </div>
           ) : trades.length > 0 ? (
             <>
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+              {/* Trades Grid */}
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-10">
                 {trades.map((trade) => (
                   <TradeCard key={trade.id} trade={trade} />
                 ))}
@@ -278,21 +317,25 @@ export default function TradesPage() {
 
               {/* Pagination */}
               {totalPages > 1 && (
-                <div className="flex justify-center space-x-2">
+                <div className="flex justify-center items-center gap-3 text-white">
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentPage((prev) => Math.max(1, prev - 1))}
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                     disabled={currentPage === 1}
+                    className="bg-white/10 border-white/30 hover:bg-white/20"
                   >
                     Previous
                   </Button>
-                  <span className="flex items-center px-4 text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
+                  <span className="text-sm">
+                    Page <strong>{currentPage}</strong> of <strong>{totalPages}</strong>
                   </span>
                   <Button
                     variant="outline"
-                    onClick={() => setCurrentPage((prev) => Math.min(totalPages, prev + 1))}
+                    size="sm"
+                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
                     disabled={currentPage === totalPages}
+                    className="bg-white/10 border-white/30 hover:bg-white/20"
                   >
                     Next
                   </Button>
@@ -300,17 +343,18 @@ export default function TradesPage() {
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <TrendingUp className="h-12 w-12 text-muted-foreground" />
+            /* Empty State */
+            <div className="text-center py-16">
+              <div className="w-28 h-28 bg-white/20 rounded-full flex items-center justify-center mx-auto mb-6 backdrop-blur-md border border-white/30">
+                <TrendingUp className="h-14 w-14 text-white/70" />
               </div>
-              <h3 className="text-lg font-medium mb-2">No trades found</h3>
-              <p className="text-muted-foreground mb-6">
+              <h3 className="text-2xl font-bold text-white mb-3">No trades found</h3>
+              <p className="text-white/70 mb-6 max-w-md mx-auto">
                 {searchTerm || Object.keys(filters).length > 0
-                  ? "Try adjusting your search or filters"
-                  : "No trades have been created yet"}
+                  ? "Try adjusting your search or filters."
+                  : "No trades have been created yet."}
               </p>
-              <Button asChild>
+              <Button asChild className="bg-[#093102] text-white hover:bg-[#0A3D04]">
                 <Link href="/animals">Browse Animals to Trade</Link>
               </Button>
             </div>

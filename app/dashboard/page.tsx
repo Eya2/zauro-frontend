@@ -154,52 +154,67 @@ export default function DashboardPage() {
             </>
           )}
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Wallet Balance</CardTitle>
-                <Wallet className="h-4 w-4 text-white/50" />
-              </CardHeader>
-              <CardContent>
-                {walletLoading ? (
-                  <LoadingSpinner size="sm" />
-                ) : balance ? (
-                  <div>
-                    <div className="text-2xl font-bold text-white">{Number.parseFloat(balance.hbar).toFixed(2)} HBAR</div>
-                    <p className="text-xs text-white/70">{Number.parseFloat(balance.zauToken).toFixed(2)} ZAU</p>
-                  </div>
-                ) : (
-                  <div className="text-sm text-white/70">No wallet</div>
-                )}
-              </CardContent>
-            </Card>
+         {/* Stats Cards */}
+<div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+  {[
+    {
+      title: "Wallet Balance",
+      icon: <Wallet className="h-4 w-4 text-white/50" />,
+      value: walletLoading
+        ? <LoadingSpinner size="sm" />
+        : balance
+          ? (
+            <>
+              <div className="text-3xl font-bold text-white">
+                {Number.parseFloat(balance.hbar).toFixed(2)}
+              </div>
+              <p className="text-sm text-white/70">HBAR</p>
+            </>
+          )
+          : (
+            <p className="text-sm text-white/70">No Wallet</p>
+          ),
+    },
+    {
+      title: "Total Animals",
+      icon: <Users className="h-4 w-4 text-white/50" />,
+      value: (
+        <>
+          <div className="text-3xl font-bold text-white">{stats.totalAnimals}</div>
+          <p className="text-sm text-white/70">{stats.listedAnimals} listed</p>
+        </>
+      ),
+    },
+    {
+      title: "Completed Trades",
+      icon: <Activity className="h-4 w-4 text-white/50" />,
+      value: (
+        <>
+          <div className="text-3xl font-bold text-white">{stats.completedTrades}</div>
+          <p className="text-sm text-white/70 flex items-center gap-1">
+            <TrendingUp className="h-3 w-3 text-white/50" /> Activity
+          </p>
+        </>
+      ),
+    },
+  ].map((item, idx) => (
+    <Card
+      key={idx}
+      className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20 min-h-[140px] flex flex-col"
+    >
+      <CardHeader className="flex flex-row items-center justify-between pb-2">
+        <CardTitle className="text-sm font-semibold text-white">
+          {item.title}
+        </CardTitle>
+        {item.icon}
+      </CardHeader>
+      <CardContent className="flex-1 flex flex-col justify-center gap-1">
+        {item.value}
+      </CardContent>
+    </Card>
+  ))}
+</div>
 
-            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Total Animals</CardTitle>
-                <Users className="h-4 w-4 text-white/50" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.totalAnimals}</div>
-                <p className="text-xs text-white/70">{stats.listedAnimals} listed for trade</p>
-              </CardContent>
-            </Card>
-
-            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium text-white">Completed Trades</CardTitle>
-                <Activity className="h-4 w-4 text-white/50" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold text-white">{stats.completedTrades}</div>
-                <p className="text-xs text-white/70">
-                  <TrendingUp className="inline h-3 w-3 mr-1 text-white/50" />
-                  Trading activity
-                </p>
-              </CardContent>
-            </Card>
-          </div>
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Recent Animals */}
             <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">

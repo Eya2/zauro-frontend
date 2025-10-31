@@ -123,7 +123,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-[#093102] text-white/60 text-white py-2 rounded-xl"
+                className="w-full bg-[#093102] text-white/60 py-2 rounded-xl"
                 disabled={loading}
               >
                 {loading ? (
