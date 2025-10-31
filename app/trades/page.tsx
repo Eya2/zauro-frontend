@@ -56,32 +56,58 @@ export default function TradesPage() {
     fetchTrades()
   }, [currentPage, filters, searchTerm, viewMode])
 
+  
   const fetchTrades = async () => {
     try {
-      setLoading(true)
-      const params = {
+      setLoading(true);
+  
+      /* 1.  Only these three keys are legal on the query string */
+      const base: any = {
         page: currentPage,
         limit: 12,
-        search: searchTerm || undefined,
-        filters: {
-          ...filters,
-          ...(viewMode === "buying" && { buyerId: user?.id }),
-          ...(viewMode === "selling" && { sellerId: user?.id }),
-          ...(viewMode === "my-trades" && {
-            $or: [{ buyerId: user?.id }, { sellerId: user?.id }],
-          }),
-        },
+        ...(filters.status?.length && { status: filters.status.join(',') }),
+      };
+  
+      /* 2.  Grab one page (or many pages until we have enough) */
+      const res = await api.getTrades(base);
+      let rows = res.data ?? [];
+  
+      /* 3.  CLIENT-SIDE filtering ----------------------------------*/
+      if (user?.id) {
+        if (viewMode === 'buying') rows = rows.filter((t) => t.buyerId === user.id);
+        if (viewMode === 'selling') rows = rows.filter((t) => t.sellerId === user.id);
+        if (viewMode === 'my-trades')
+          rows = rows.filter((t) => t.buyerId === user.id || t.sellerId === user.id);
       }
-
-      const response = await api.getTrades(params)
-      setTrades(response.data || [])
-      setTotalPages(response.pagination?.totalPages || 1)
-    } catch (error) {
-      console.error("Failed to fetch trades:", error)
+  
+      if (searchTerm)
+        rows = rows.filter((t) =>
+          t.animal?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        );
+  
+      if (filters.currency?.length)
+        rows = rows.filter((t) => filters.currency!.includes(t.currency));
+  
+      if (filters.minPrice != null)
+        rows = rows.filter((t) => Number(t.price) >= Number(filters.minPrice));
+      if (filters.maxPrice != null)
+        rows = rows.filter((t) => Number(t.price) <= Number(filters.maxPrice));
+  
+      /* 4.  Sort newest first */
+      rows.sort((a, b) => +new Date(b.createdAt) - +new Date(a.createdAt));
+  
+      /* 5.  Manual pagination (we only got one server page) --------*/
+      const start = (currentPage - 1) * 12;
+      const paginated = rows.slice(start, start + 12);
+  
+      setTrades(paginated);
+      setTotalPages(Math.ceil(rows.length / 12));
+    } catch (err) {
+      console.error('Failed to fetch trades:', err);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   const handleFilterChange = useCallback((key: keyof TradeFilters, value: any) => {
     setFilters((prev) => ({

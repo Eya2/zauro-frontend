@@ -483,11 +483,12 @@ export default function AnimalDetailPage() {
                         </Button>
                       )}
                     </div>) : (
-                      <Alert className="bg-red-500/20 text-red-100 border-red-400/30">
-                        <AlertDescription>
-                          This animal cannot be listed for trade until it is expert approved.
-                        </AlertDescription>
-                      </Alert>)}
+                     <Alert className="bg-red-500/20 text-white border-red-400/30">
+                     <AlertDescription className="text-white">
+                       This animal cannot be listed for trade until it is expert approved.
+                     </AlertDescription>
+                   </Alert>
+                   )}
                   
                 </CardContent>
               </Card>
