@@ -17,6 +17,7 @@ import { Progress } from "@/components/ui/progress"
 import type { AnimalSpecies, AnimalGender } from "@/lib/types"
 import { ImageIcon, FileText, Sparkles, ArrowLeft, CheckCircle } from "lucide-react"
 import Link from "next/link"
+import { stat } from "fs"
 
 type Step = "details" | "images" | "documents" | "minting" | "success"
 
@@ -34,6 +35,8 @@ export default function CreateAnimalPage() {
     breed: "",
     age: "",
     description: "",
+    isListed: false as boolean,
+    status: "PENDING_EXPERT_REVIEW" as const,
   })
 
   const [files, setFiles] = useState({
@@ -42,7 +45,6 @@ export default function CreateAnimalPage() {
   })
 
   const speciesOptions: { value: AnimalSpecies; label: string }[] = [
-   
     { value: "COW", label: "Cow" },
     { value: "SHEEP", label: "Sheep" },
     { value: "GOAT", label: "Goat" },
@@ -84,18 +86,20 @@ export default function CreateAnimalPage() {
     setLoading(true)
     setError("")
     setCurrentStep("minting")
+  
     try {
-      const data = new FormData()
-      data.append("name", form.name)
-      data.append("species", form.species)
-      data.append("gender", form.gender)
-      data.append("breed", form.breed)
-      data.append("age", form.age)
-      if (form.description) data.append("description", form.description)
-      if (files.image) data.append("image", files.image)
-      if (files.vetRecord) data.append("vetRecord", files.vetRecord)
-
-      const animal = await api.createAnimal(data)
+      const dto = {
+        name: form.name,
+        species: form.species,
+        gender: form.gender,
+        breed: form.breed,
+        age: Number(form.age),
+        description: form.description || undefined,
+        isListed: false,
+        status: "PENDING_EXPERT_REVIEW" as const,
+      }
+  
+      const animal = await api.createAnimal(dto, files.image, files.vetRecord)
       setCreated(animal)
       setCurrentStep("success")
     } catch (err: any) {
@@ -117,7 +121,7 @@ export default function CreateAnimalPage() {
     title: string
     description: string
   }) => (
-    <div className="border-2 border-dashed border-muted-foreground/25 rounded-lg p-6 text-center">
+    <div className="border-2 border-dashed border-white/20 rounded-xl p-8 text-center bg-white/15 backdrop-blur-sm">
       <input
         type="file"
         accept={accept}
@@ -126,20 +130,20 @@ export default function CreateAnimalPage() {
         id={`${type}-upload`}
       />
       <label htmlFor={`${type}-upload`} className="cursor-pointer">
-        <div className="space-y-2">
+        <div className="space-y-3">
           {type === "image" ? (
-            <ImageIcon className="h-12 w-12 text-muted-foreground mx-auto" />
+            <ImageIcon className="h-12 w-12 text-white/50 mx-auto" />
           ) : (
-            <FileText className="h-12 w-12 text-muted-foreground mx-auto" />
+            <FileText className="h-12 w-12 text-white/50 mx-auto" />
           )}
           <div>
-            <p className="font-medium">{title}</p>
-            <p className="text-sm text-muted-foreground">{description}</p>
+            <p className="font-medium text-white">{title}</p>
+            <p className="text-sm text-white/70">{description}</p>
           </div>
           {files[type] && (
-            <div className="mt-2 p-2 bg-muted rounded text-sm">
-              <p className="font-medium">{files[type]!.name}</p>
-              <p className="text-muted-foreground">{(files[type]!.size / 1024 / 1024).toFixed(2)} MB</p>
+            <div className="mt-3 p-3 bg-white/15 rounded-lg border border-white/20 text-sm">
+              <p className="font-medium text-white">{files[type]!.name}</p>
+              <p className="text-white/70">{(files[type]!.size / 1024 / 1024).toFixed(2)} MB</p>
             </div>
           )}
         </div>
@@ -149,31 +153,39 @@ export default function CreateAnimalPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
-        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <div className="flex items-center space-x-4 mb-4">
-              <Button variant="ghost" size="sm" asChild>
+        <main className="max-w-2xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="mb-12">
+            <div className="flex items-center space-x-4 mb-6">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-white/60 hover:text-white hover:bg-white/10"
+                asChild
+              >
                 <Link href="/animals">
                   <ArrowLeft className="h-4 w-4 mr-2" />
                   Back to Animals
                 </Link>
               </Button>
             </div>
-            <h1 className="text-3xl font-bold text-foreground">Register New Animal</h1>
-            <p className="text-muted-foreground mt-2">Create an NFT for your animal on the blockchain</p>
+            <h1 className="text-4xl font-bold text-white drop-shadow-md">Register New Animal</h1>
+            <p className="text-white/80 mt-3 text-lg">Create an NFT for your animal on the blockchain</p>
           </div>
 
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="space-y-4">
-                <div className="flex justify-between text-sm">
+          <Card className="mb-10 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
+            <CardContent className="p-8">
+              <div className="space-y-6">
+                <div className="flex justify-between text-sm text-white/80">
                   <span>Step {currentStepIndex + 1} of {steps.length}</span>
                   <span>{Math.round(progress)}% Complete</span>
                 </div>
-                <Progress value={progress} className="w-full" />
-                <div className="flex justify-between text-sm text-muted-foreground">
+                <Progress
+                  value={progress}
+                  className="w-full bg-white/20 [&>*]:bg-[#093102]"
+                />
+                <div className="flex justify-between text-sm text-white/70">
                   <span>{steps[currentStepIndex]?.title}</span>
                   <span>{steps[currentStepIndex]?.description}</span>
                 </div>
@@ -182,37 +194,41 @@ export default function CreateAnimalPage() {
           </Card>
 
           {error && (
-            <Alert variant="destructive" className="mb-6">
+            <Alert className="mb-8 bg-red-500/20 text-red-100 border-red-400/30">
               <AlertDescription>{error}</AlertDescription>
             </Alert>
           )}
 
-          <Card>
-            <CardContent className="p-6">
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
+            <CardContent className="p-8">
               {currentStep === "details" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold mb-4">Animal Details</h2>
-                  <div className="space-y-4">
+                <div className="space-y-8">
+                  <h2 className="text-2xl font-semibold text-white">Animal Details</h2>
+                  <div className="space-y-6">
                     <div className="space-y-2">
-                      <Label>Name *</Label>
+                      <Label className="text-white">Name *</Label>
                       <Input
                         name="name"
                         value={form.name}
                         onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                         placeholder="Enter animal name"
+                        className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
                         required
                       />
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Species *</Label>
-                      <Select value={form.species} onValueChange={(v) => setForm((p) => ({ ...p, species: v as AnimalSpecies }))}>
-                        <SelectTrigger>
+                      <Label className="text-white">Species *</Label>
+                      <Select
+                        value={form.species}
+                        onValueChange={(v) => setForm((p) => ({ ...p, species: v as AnimalSpecies }))}
+                      >
+                        <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                           <SelectValue placeholder="Select species" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
                           {speciesOptions.map((o) => (
-                            <SelectItem key={o.value} value={o.value}>
+                            <SelectItem key={o.value} value={o.value} className="text-white">
                               {o.label}
                             </SelectItem>
                           ))}
@@ -221,12 +237,15 @@ export default function CreateAnimalPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Gender *</Label>
-                      <Select value={form.gender} onValueChange={(v) => setForm((p) => ({ ...p, gender: v as AnimalGender }))}>
-                        <SelectTrigger>
+                      <Label className="text-white">Gender *</Label>
+                      <Select
+                        value={form.gender}
+                        onValueChange={(v) => setForm((p) => ({ ...p, gender: v as AnimalGender }))}
+                      >
+                        <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                           <SelectValue placeholder="Select gender" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
                           <SelectItem value="MALE">Male</SelectItem>
                           <SelectItem value="FEMALE">Female</SelectItem>
                         </SelectContent>
@@ -235,17 +254,18 @@ export default function CreateAnimalPage() {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label>Breed *</Label>
+                        <Label className="text-white">Breed *</Label>
                         <Input
                           name="breed"
                           value={form.breed}
                           onChange={(e) => setForm((p) => ({ ...p, breed: e.target.value }))}
                           placeholder="e.g. Holstein"
+                          className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
                           required
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label>Age (years) *</Label>
+                        <Label className="text-white">Age (years) *</Label>
                         <Input
                           type="number"
                           min="0"
@@ -253,17 +273,19 @@ export default function CreateAnimalPage() {
                           value={form.age}
                           onChange={(e) => setForm((p) => ({ ...p, age: e.target.value }))}
                           placeholder="e.g. 3"
+                          className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
                           required
                         />
                       </div>
                     </div>
 
                     <div className="space-y-2">
-                      <Label>Description</Label>
+                      <Label className="text-white">Description</Label>
                       <Textarea
                         value={form.description}
                         onChange={(e) => setForm((p) => ({ ...p, description: e.target.value }))}
                         placeholder="Describe your animal..."
+                        className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
                         rows={4}
                       />
                     </div>
@@ -272,9 +294,9 @@ export default function CreateAnimalPage() {
               )}
 
               {currentStep === "images" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold mb-4">Animal Photos</h2>
-                  <p className="text-muted-foreground mb-6">Upload a clear photo of your animal.</p>
+                <div className="space-y-8">
+                  <h2 className="text-2xl font-semibold text-white">Animal Photos</h2>
+                  <p className="text-white/70">Upload a clear photo of your animal.</p>
                   <FileUpload
                     type="image"
                     accept="image/*"
@@ -285,9 +307,9 @@ export default function CreateAnimalPage() {
               )}
 
               {currentStep === "documents" && (
-                <div className="space-y-6">
-                  <h2 className="text-xl font-semibold mb-4">Veterinary Records</h2>
-                  <p className="text-muted-foreground mb-6">Upload vet records or health certificates (optional).</p>
+                <div className="space-y-8">
+                  <h2 className="text-2xl font-semibold text-white">Veterinary Records</h2>
+                  <p className="text-white/70">Upload vet records or health certificates (optional).</p>
                   <FileUpload
                     type="vetRecord"
                     accept=".pdf,.doc,.docx"
@@ -298,31 +320,38 @@ export default function CreateAnimalPage() {
               )}
 
               {currentStep === "minting" && (
-                <div className="text-center space-y-6">
-                  <Sparkles className="h-12 w-12 text-primary animate-pulse mx-auto" />
-                  <h2 className="text-xl font-semibold">Creating Your NFT</h2>
-                  <p className="text-muted-foreground">Minting on Hedera blockchain – please wait...</p>
-                  <LoadingSpinner size="lg" />
+                <div className="text-center space-y-8">
+                  <Sparkles className="h-16 w-16 text-[#939896] animate-pulse mx-auto" />
+                  <h2 className="text-2xl font-semibold text-white">Creating Your NFT</h2>
+                  <p className="text-white/70 text-lg">Minting on Hedera blockchain – please wait...</p>
+                  <LoadingSpinner size="lg" className="text-white" />
                 </div>
               )}
 
               {currentStep === "success" && (
-                <div className="text-center space-y-6">
-                  <CheckCircle className="h-12 w-12 text-green-500 mx-auto" />
-                  <h2 className="text-xl font-semibold">Animal Registered Successfully!</h2>
-                  <p className="text-muted-foreground">Your animal has been minted as an NFT.</p>
+                <div className="text-center space-y-8">
+                  <CheckCircle className="h-16 w-16 text-green-500 mx-auto" />
+                  <h2 className="text-2xl font-semibold text-white">Animal Registered Successfully!</h2>
+                  <p className="text-white/70 text-lg">Your animal has been minted as an NFT.</p>
                   {created && (
-                    <div className="bg-muted p-4 rounded-lg text-left space-y-1 text-sm">
-                      <p><span className="text-muted-foreground">Token ID:</span> {created.tokenId}</p>
-                      <p><span className="text-muted-foreground">Serial:</span> {created.tokenSerialNumber}</p>
-                      <p><span className="text-muted-foreground">Name:</span> {created.name}</p>
+                    <div className="bg-white/15 p-4 rounded-xl border border-white/20 text-left space-y-2 text-sm">
+                      <p><span className="text-white/70">Token ID:</span> <span className="text-white">{created.tokenId}</span></p>
+                      <p><span className="text-white/70">Serial:</span> <span className="text-white">{created.tokenSerialNumber}</span></p>
+                      <p><span className="text-white/70">Name:</span> <span className="text-white">{created.name}</span></p>
                     </div>
                   )}
                   <div className="flex space-x-4 justify-center">
-                    <Button asChild>
+                    <Button
+                      asChild
+                      className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-8"
+                    >
                       <Link href={`/animals/${created?.id}`}>View Animal</Link>
                     </Button>
-                    <Button variant="outline" asChild>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl px-8"
+                    >
                       <Link href="/animals">Back to Animals</Link>
                     </Button>
                   </div>
@@ -332,12 +361,21 @@ export default function CreateAnimalPage() {
           </Card>
 
           {currentStep !== "minting" && currentStep !== "success" && (
-            <div className="flex justify-between mt-6">
-              <Button variant="outline" onClick={handleBack} disabled={currentStep === "details"}>
+            <div className="flex justify-between mt-8">
+              <Button
+                variant="outline"
+                onClick={handleBack}
+                disabled={currentStep === "details"}
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl px-6"
+              >
                 Back
               </Button>
-              <Button onClick={handleNext} disabled={loading}>
-                {currentStep === "documents" ? "Create NFT" : "Next"}
+              <Button
+                onClick={handleNext}
+                disabled={loading}
+                className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-6"
+              >
+                {currentStep === "documents" ? "Save" : "Next"}
               </Button>
             </div>
           )}

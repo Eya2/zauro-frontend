@@ -42,59 +42,59 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-background via-accent/10 to-background p-4 rustic-texture">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <Link href="/" className="inline-flex flex-col items-center space-y-3 logo-container">
-            <div className="w-16 h-16 flex items-center justify-center">
-              <Image src="/logo.png" alt="Zauro Marketplace" width={64} height={64} className="w-full h-full object-contain" />
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16] p-4">
+      <div className="w-full max-w-lg">
+        <div className="flex flex-col items-center text-center mb-10 animate-fade-in">
+          <Link href="/" className="flex flex-col items-center gap-3 group">
+          <div className="w-28 h-28 rounded-full bg-white/40 flex items-center justify-center backdrop-blur-md border border-white/40 scale-100 group-hover:scale-105 transition-transform shadow-lg shadow-[#0288D1]/30">
+  <Image src="/logo.png" alt="Zauro" width={96} height={96} className="object-contain" />
             </div>
-            <div className="flex flex-col items-center">
-              <span className="font-bold text-3xl text-foreground tracking-wide">Zauro</span>
-              <span className="text-sm text-muted-foreground font-medium tracking-wider uppercase">Marketplace</span>
-            </div>
+            <span className="text-white font-bold text-4xl tracking-wide drop-shadow-md">Zauro</span>
+            <span className="text-xs uppercase tracking-widest text-white/70">Marketplace</span>
           </Link>
-          <p className="text-muted-foreground mt-4 text-base">Welcome back to the trusted animal trading platform</p>
+          <p className="text-white/80 mt-4 text-sm max-w-sm">
+            Trading animals with trust — traceability and transparency for everyone.
+          </p>
         </div>
 
-        <Card className="border-0 shadow-2xl agricultural-card">
-          <CardHeader className="space-y-2 pb-6">
-            <CardTitle className="text-2xl font-bold text-center text-foreground">Sign In</CardTitle>
-            <CardDescription className="text-center text-base">Enter your credentials to access your account</CardDescription>
+        <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
+          <CardHeader>
+            <CardTitle className="text-center text-white text-2xl">Welcome Back</CardTitle>
+            <CardDescription className="text-center text-white/70 text-sm">
+              Sign in to continue your journey
+            </CardDescription>
           </CardHeader>
-
-          <CardContent className="px-8 pb-8">
-            <form onSubmit={handleSubmit} className="space-y-4">
+          <CardContent>
+            <form onSubmit={handleSubmit} className="space-y-5">
               {error && (
-                <Alert variant="destructive">
+                <Alert variant="destructive" className="bg-red-500/20 text-red-100 border-red-400/30">
                   <AlertDescription>{error}</AlertDescription>
                 </Alert>
               )}
 
               {/* Email */}
               <div className="space-y-2">
-                <Label htmlFor="email">Email</Label>
+                <Label htmlFor="email" className="text-white">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-white/50" />
                   <Input
                     id="email"
                     name="email"
                     type="email"
-                    placeholder="Enter your email"
+                    placeholder="your@email.com"
                     value={formData.email}
                     onChange={handleChange}
-                    className="pl-10"
+                    className="pl-10 bg-white/15 text-white border-white/20 placeholder:text-white/50"
                     required
-                    autoComplete="email"
                   />
                 </div>
               </div>
 
               {/* Password */}
               <div className="space-y-2">
-                <Label htmlFor="password">Password</Label>
+                <Label htmlFor="password" className="text-white">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-white/50" />
                   <Input
                     id="password"
                     name="password"
@@ -102,35 +102,30 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={formData.password}
                     onChange={handleChange}
-                    className="pl-10 pr-10"
+                    className="pl-10 pr-10 bg-white/15 text-white border-white/20 placeholder:text-white/50"
                     required
-                    autoComplete="current-password"
                   />
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                    className="absolute right-2 top-2 text-white/60 hover:text-white"
                     onClick={() => setShowPassword((s) => !s)}
-                    aria-label={showPassword ? "Hide password" : "Show password"}
                   >
-                    {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    {showPassword ? <EyeOff /> : <Eye />}
                   </Button>
                 </div>
               </div>
 
-              {/* Forgot link */}
-              <div className="flex items-center justify-between">
-                <Link
-                  href="/auth/forgot-password"
-                  className="text-sm text-primary hover:text-primary/80 transition-colors"
-                >
-                  Forgot password?
-                </Link>
-              </div>
+              <Link href="/auth/forgot-password" className="text-sm text-white/60 hover:underline">
+                Forgot password?
+              </Link>
 
-              {/* Submit */}
-              <Button type="submit" className="w-full" disabled={loading}>
+              <Button
+                type="submit"
+                className="w-full bg-[#093102] text-white/60 text-white py-2 rounded-xl"
+                disabled={loading}
+              >
                 {loading ? (
                   <>
                     <LoadingSpinner size="sm" className="mr-2" />
@@ -142,18 +137,12 @@ export default function LoginPage() {
               </Button>
             </form>
 
-            {/* Sign-up redirect */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-muted-foreground">
-                Don&apos;t have an account?{" "}
-                <Link
-                  href="/auth/register"
-                  className="text-primary hover:text-primary/80 font-medium transition-colors"
-                >
-                  Sign up
-                </Link>
-              </p>
-            </div>
+            <p className="text-center text-sm mt-6 text-white/80">
+              No account yet?{" "}
+              <Link href="/auth/register" className="text-[#939896] hover:underline font-semibold">
+                Create one
+              </Link>
+            </p>
           </CardContent>
         </Card>
       </div>

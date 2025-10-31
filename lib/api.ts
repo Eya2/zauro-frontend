@@ -18,7 +18,8 @@ import type {
   TradeFilters,
   Notification,
   UpdateAnimalDto,
-  ResetPasswordRequest,   // added
+  ResetPasswordRequest,
+  CreateAnimalDto,   // added
 } from "./types"
 
 class ApiClient {
@@ -110,7 +111,13 @@ class ApiClient {
   async resetPassword(data: ResetPasswordRequest): Promise<void> {
     await this.client.post("/auth/forgot-password/reset", data)
   }
-
+/* ------------------------------------------------------------------
+ *  PUT  /users/profile   (or /auth/profile – adjust to your route)
+ * ------------------------------------------------------------------ */
+async updateProfile(data: { firstName: string; lastName: string; email: string; phone?: string }) {
+  const res = await this.client.put<ApiResponse<User>>("/users/profile", data)
+  return res.data.data!
+}
   /* =========================================================
    * ANIMALS
    * =======================================================*/
@@ -136,14 +143,24 @@ async findMine(params?: {
     const res = await this.client.get<Animal>(`/animals/${id}`)
     return res.data
   }
+
+  async createAnimal(dto: CreateAnimalDto, image?: File | null, vetRecord?: File | null): Promise<Animal> {
+    const body = new FormData()
   
-  async createAnimal(formData: FormData): Promise<Animal> {
-    const res = await this.client.post<ApiResponse<Animal>>("/animals", formData, {
+    // Champs simples
+    Object.entries(dto).forEach(([k, v]) => {
+      if (v !== undefined) body.append(k, String(v))
+    })
+  
+    // Fichiers
+    if (image) body.append("image", image)
+    if (vetRecord) body.append("vetRecord", vetRecord)
+  
+    const res = await this.client.post<ApiResponse<Animal>>("/animals", body, {
       headers: { "Content-Type": "multipart/form-data" },
     })
     return res.data.data!
   }
-
   /* -------------- Admin / Manager only -------------- */
   async getPendingReview(params?: { page?: number; limit?: number }): Promise<PaginatedResponse<Animal>> {
     const res = await this.client.get<PaginatedResponse<Animal>>("/animals/pending-review", { params })
@@ -274,27 +291,5 @@ async uploadVetRecord(id: string, file: File): Promise<{ vetRecordUrl: string }>
     const res = await this.client.post<Wallet>("/wallets/create-with-balance", { amount: initialHbar })
     return res.data
   }
-
-  /* =========================================================
-   * NOTIFICATIONS
-   * =======================================================*/
-
-  async getNotifications(params?: {
-    page?: number
-    limit?: number
-    unreadOnly?: boolean
-  }): Promise<PaginatedResponse<Notification>> {
-    const res = await this.client.get<PaginatedResponse<Notification>>("/notifications", { params })
-    return res.data
-  }
-
-  async markNotificationAsRead(id: string): Promise<void> {
-    await this.client.patch(`/notifications/${id}/read`)
-  }
-
-  async markAllNotificationsAsRead(): Promise<void> {
-    await this.client.patch("/notifications/read-all")
-  }
 }
-
 export const api = new ApiClient()

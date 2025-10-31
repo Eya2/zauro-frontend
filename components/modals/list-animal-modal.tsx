@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import { api } from "@/lib/api"
 import { Button } from "@/components/ui/button"
@@ -42,6 +41,7 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
         title: "Invalid Price",
         description: "Please enter a valid price greater than 0",
         variant: "destructive",
+        className: "bg-red-500/20 text-red-100 border-red-400/30",
       })
       return
     }
@@ -57,6 +57,7 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
       toast({
         title: "Animal Listed Successfully",
         description: `${animal.name} has been listed for trade at ${price} ${currency}`,
+        className: "bg-green-500/20 text-green-100 border-green-400/30",
       })
 
       onSuccess()
@@ -69,6 +70,7 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
         title: "Failed to List Animal",
         description: error.response?.data?.message || "An error occurred while listing the animal",
         variant: "destructive",
+        className: "bg-red-500/20 text-red-100 border-red-400/30",
       })
     } finally {
       setLoading(false)
@@ -85,26 +87,28 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
 
   return (
     <Dialog open={isOpen} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
         <DialogHeader>
-          <DialogTitle className="flex items-center space-x-2">
-            <TrendingUp className="h-5 w-5 text-primary" />
+          <DialogTitle className="flex items-center space-x-2 text-white">
+            <TrendingUp className="h-5 w-5 text-[#939896]" />
             <span>List Animal for Trade</span>
           </DialogTitle>
-          <DialogDescription>Set a price to list {animal.name} on the marketplace</DialogDescription>
+          <DialogDescription className="text-white/70">
+            Set a price to list {animal.name} on the marketplace
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
           {/* Animal Preview */}
-          <div className="flex items-center space-x-3 p-3 bg-muted rounded-lg">
+          <div className="flex items-center space-x-3 p-3 bg-white/15 rounded-lg border border-white/20">
             <img
               src={animal.imageUrl || "/placeholder.svg?height=50&width=50&query=cute animal"}
               alt={animal.name}
               className="w-12 h-12 rounded-lg object-cover"
             />
             <div>
-              <h4 className="font-medium">{animal.name}</h4>
-              <p className="text-sm text-muted-foreground">
+              <h4 className="font-medium text-white">{animal.name}</h4>
+              <p className="text-sm text-white/70">
                 {animal.species} {animal.breed && `• ${animal.breed}`}
               </p>
             </div>
@@ -112,9 +116,9 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
 
           {/* Price Input */}
           <div className="space-y-2">
-            <Label htmlFor="price">Price *</Label>
+            <Label htmlFor="price" className="text-white">Price *</Label>
             <div className="relative">
-              <Coins className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+              <Coins className="absolute left-3 top-3 h-4 w-4 text-white/50" />
               <Input
                 id="price"
                 type="number"
@@ -123,7 +127,7 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
                 placeholder="Enter price"
                 value={price}
                 onChange={(e) => setPrice(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-white/15 text-white border-white/20 placeholder:text-white/50"
                 required
                 disabled={loading}
               />
@@ -132,12 +136,12 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
 
           {/* Currency Selection */}
           <div className="space-y-2">
-            <Label htmlFor="currency">Currency *</Label>
+            <Label htmlFor="currency" className="text-white">Currency *</Label>
             <Select value={currency} onValueChange={(value: "HBAR" | "ZAU") => setCurrency(value)} disabled={loading}>
-              <SelectTrigger>
+              <SelectTrigger className="bg-white/15 text-white border-white/20">
                 <SelectValue placeholder="Select currency" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white">
                 <SelectItem value="HBAR">HBAR (Hedera)</SelectItem>
                 <SelectItem value="ZAU">ZAU Token</SelectItem>
               </SelectContent>
@@ -146,21 +150,32 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
 
           {/* AI Prediction Value (if available) */}
           {animal.aiPredictionValue && (
-            <div className="p-3 bg-blue-50 dark:bg-blue-950/20 rounded-lg">
+            <div className="p-3 bg-white/15 rounded-lg border border-white/20">
               <div className="flex items-center space-x-2 text-sm">
-                <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                <span className="text-blue-700 dark:text-blue-300">
-                  AI Predicted Value: {Number.parseFloat(animal.aiPredictionValue).toFixed(0)} HBAR
+                <div className="w-2 h-2 bg-[#0288D1] rounded-full"></div>
+                <span className="text-white/80">
+                  AI Predicted Value: {Number(animal.aiPredictionValue).toFixed(0)} HBAR
                 </span>
               </div>
             </div>
           )}
 
           <DialogFooter className="flex space-x-2">
-            <Button type="button" variant="outline" onClick={handleClose} disabled={loading}>
+            <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+              onClick={handleClose}
+              disabled={loading}
+            >
               Cancel
             </Button>
-            <Button type="submit" disabled={loading || !price}>
+            { animal.status === "EXPERT_APPROVED" ? (
+            <Button
+              type="submit"
+              className="bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
+              disabled={loading || !price}
+            >
               {loading ? (
                 <>
                   <LoadingSpinner size="sm" className="mr-2" />
@@ -168,11 +183,19 @@ export function ListAnimalModal({ animal, isOpen, onClose, onSuccess }: ListAnim
                 </>
               ) : (
                 <>
-                  <TrendingUp className="h-4 w-4 mr-2" />
+                  <TrendingUp className="h-4 w-4 mr-2 text-white/60" />
                   List for Trade
                 </>
               )}
-            </Button>
+            </Button>) : (
+              <Button
+              type="button"
+              variant="outline"
+              className="border-white/20 text-white hover:bg-white/10 bg-transparent"
+              disabled={loading}
+            >
+              Pending Approval 
+            </Button>)}
           </DialogFooter>
         </form>
       </DialogContent>

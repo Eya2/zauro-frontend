@@ -23,7 +23,6 @@ import {
   Info,
   User,
   Calendar,
-  MapPin,
   Heart,
   Star,
 } from "lucide-react"
@@ -56,7 +55,7 @@ export default function BuyAnimalPage() {
       setLoading(true)
       const [animalData, tradesData] = await Promise.all([
         api.getAnimal(animalId),
-        api.getTrades(), 
+        api.getTrades(),
       ])
 
       setAnimal(animalData)
@@ -114,10 +113,10 @@ export default function BuyAnimalPage() {
   if (loading) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
           <Navbar />
           <div className="flex justify-center items-center py-20">
-            <LoadingSpinner size="lg" />
+            <LoadingSpinner size="lg" className="text-white" />
           </div>
         </div>
       </ProtectedRoute>
@@ -127,16 +126,19 @@ export default function BuyAnimalPage() {
   if (error || !animal) {
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
           <Navbar />
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <Alert variant="destructive">
-              <AlertTriangle className="h-4 w-4" />
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <Alert className="bg-red-500/20 text-red-100 border-red-400/30">
+              <AlertTriangle className="h-4 w-4 text-red-100" />
               <AlertDescription>{error || "Animal not found"}</AlertDescription>
             </Alert>
-            <Button asChild className="mt-4">
+            <Button
+              asChild
+              className="mt-6 bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-6"
+            >
               <Link href="/animals">
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-2 text-white/50" />
                 Back to Animals
               </Link>
             </Button>
@@ -148,56 +150,57 @@ export default function BuyAnimalPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
-
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <Button variant="ghost" asChild>
+          <div className="flex items-center justify-between mb-12">
+            <Button
+              variant="ghost"
+              className="text-white/60 hover:text-white hover:bg-white/10"
+              asChild
+            >
               <Link href={`/animals/${animalId}`}>
-                <ArrowLeft className="h-4 w-4 mr-2" />
+                <ArrowLeft className="h-4 w-4 mr-2 text-white/50" />
                 Back to Animal Details
               </Link>
             </Button>
             {activeTrade && (
-              <Badge variant="secondary" className="bg-green-500 text-white">
-                Available for Purchase
-              </Badge>
+              <Badge className="bg-green-500/90 text-white">Available for Purchase</Badge>
             )}
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Main Content */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-8">
               {/* Animal Information */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Heart className="h-5 w-5 text-primary" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Heart className="h-5 w-5 text-[#939896]" />
                     <span>Animal Details</span>
                   </CardTitle>
-                  <CardDescription>Complete information about your potential new companion</CardDescription>
+                  <CardDescription className="text-white/70">Complete information about your potential new companion</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <div className="flex flex-col md:flex-row space-y-4 md:space-y-0 md:space-x-6">
-                    <div className="relative w-full md:w-48 h-48 rounded-lg overflow-hidden">
+                    <div className="relative w-full md:w-48 h-48 rounded-xl overflow-hidden group">
                       <Image
                         src={animal.imageUrl || "/placeholder.svg?height=200&width=200&query=cute animal"}
                         alt={animal.name}
                         fill
-                        className="object-cover"
+                        className="object-cover group-hover:scale-105 transition-transform duration-300"
                       />
                       {animal.tokenId && (
-                        <Badge className="absolute top-2 right-2 bg-primary text-primary-foreground">NFT</Badge>
+                        <Badge className="absolute top-2 right-2 bg-[#093102] text-white">NFT</Badge>
                       )}
                     </div>
                     <div className="flex-1 space-y-4">
                       <div>
-                        <h3 className="text-2xl font-bold text-foreground">{animal.name}</h3>
-                        <div className="flex items-center space-x-4 text-muted-foreground mt-2">
+                        <h3 className="text-2xl font-bold text-white">{animal.name}</h3>
+                        <div className="flex items-center space-x-4 text-white/70 mt-2">
                           <span className="flex items-center space-x-1">
-                            <Star className="h-4 w-4" />
+                            <Star className="h-4 w-4 text-[#939896]" />
                             <span>{animal.species}</span>
                           </span>
                           {animal.breed && (
@@ -208,7 +211,7 @@ export default function BuyAnimalPage() {
                           )}
                           {animal.age && (
                             <span className="flex items-center space-x-1">
-                              <Calendar className="h-4 w-4" />
+                              <Calendar className="h-4 w-4 text-[#939896]" />
                               <span>{animal.age} years old</span>
                             </span>
                           )}
@@ -217,21 +220,21 @@ export default function BuyAnimalPage() {
 
                       {animal.description && (
                         <div>
-                          <h4 className="font-medium text-foreground mb-2">Description</h4>
-                          <p className="text-muted-foreground">{animal.description}</p>
+                          <h4 className="font-medium text-white mb-2">Description</h4>
+                          <p className="text-white/70">{animal.description}</p>
                         </div>
                       )}
 
                       {animal.aiPredictionValue && (
-                        <div className="p-3 bg-primary/5 rounded-lg border border-primary/20">
+                        <div className="p-3 bg-white/15 rounded-xl border border-white/20">
                           <div className="flex items-center space-x-2 mb-1">
-                            <Info className="h-4 w-4 text-primary" />
-                            <span className="text-sm font-medium text-primary">AI Market Value</span>
+                            <Info className="h-4 w-4 text-[#939896]" />
+                            <span className="text-sm font-medium text-white">AI Market Value</span>
                           </div>
-                          <p className="text-lg font-bold text-primary">
-                            {animal.aiPredictionValue} {animal.aiPredictionValue|| "HBAR"}
+                          <p className="text-lg font-bold text-white">
+                            {animal.aiPredictionValue} HBAR
                           </p>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-xs text-white/70">
                             Based on market analysis and animal characteristics
                           </p>
                         </div>
@@ -243,23 +246,23 @@ export default function BuyAnimalPage() {
 
               {/* Owner Information */}
               {animal.owner && (
-                <Card>
+                <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <User className="h-5 w-5" />
+                    <CardTitle className="flex items-center space-x-2 text-white">
+                      <User className="h-5 w-5 text-[#939896]" />
                       <span>Current Owner</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent>
                     <div className="flex items-center space-x-4">
-                      <div className="w-12 h-12 bg-primary rounded-full flex items-center justify-center">
-                        <span className="text-primary-foreground font-medium">
+                      <div className="w-12 h-12 bg-[#093102] rounded-full flex items-center justify-center">
+                        <span className="text-white font-medium">
                           {animal.owner.firstName[0]}
                           {animal.owner.lastName[0]}
                         </span>
                       </div>
                       <div>
-                        <p className="font-medium">
+                        <p className="font-medium text-white">
                           {animal.owner.firstName} {animal.owner.lastName}
                         </p>
                       </div>
@@ -270,8 +273,8 @@ export default function BuyAnimalPage() {
 
               {/* Purchase Warnings */}
               {!activeTrade && (
-                <Alert>
-                  <AlertTriangle className="h-4 w-4" />
+                <Alert className="bg-white/15 text-white border-white/20">
+                  <AlertTriangle className="h-4 w-4 text-orange-400" />
                   <AlertDescription>
                     This animal is not currently listed for sale. Please check back later or contact the owner.
                   </AlertDescription>
@@ -279,8 +282,8 @@ export default function BuyAnimalPage() {
               )}
 
               {isOwnAnimal && (
-                <Alert>
-                  <Info className="h-4 w-4" />
+                <Alert className="bg-white/15 text-white border-white/20">
+                  <Info className="h-4 w-4 text-[#939896]" />
                   <AlertDescription>
                     You already own this animal. You cannot purchase your own animals.
                   </AlertDescription>
@@ -289,36 +292,36 @@ export default function BuyAnimalPage() {
             </div>
 
             {/* Sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* Purchase Card */}
               {activeTrade && !isOwnAnimal && (
-                <Card>
+                <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                   <CardHeader>
-                    <CardTitle className="flex items-center space-x-2">
-                      <ShoppingCart className="h-5 w-5" />
+                    <CardTitle className="flex items-center space-x-2 text-white">
+                      <ShoppingCart className="h-5 w-5 text-[#939896]" />
                       <span>Purchase Details</span>
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <div className="text-center">
-                      <p className="text-3xl font-bold text-foreground">
+                      <p className="text-3xl font-bold text-white">
                         {activeTrade.price} {activeTrade.currency}
                       </p>
-                      <p className="text-sm text-muted-foreground">Purchase Price</p>
+                      <p className="text-sm text-white/70">Purchase Price</p>
                     </div>
 
-                    <Separator />
+                    <Separator className="bg-white/20" />
 
                     {/* Wallet Balance */}
                     {!walletLoading && balance && (
                       <div className="space-y-2">
-                        <p className="text-sm font-medium">Your Balance</p>
+                        <p className="text-sm font-medium text-white">Your Balance</p>
                         <div className="grid grid-cols-2 gap-2 text-sm">
-                          <div className="p-2 bg-muted rounded">
-                            <p className="font-medium">{Number.parseFloat(balance.hbar).toFixed(2)} HBAR</p>
+                          <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                            <p className="font-medium text-white">{Number.parseFloat(balance.hbar).toFixed(2)} HBAR</p>
                           </div>
-                          <div className="p-2 bg-muted rounded">
-                            <p className="font-medium">{Number.parseFloat(balance.zauToken).toFixed(2)} ZAU</p>
+                          <div className="p-2 bg-white/15 rounded-xl border border-white/20">
+                            <p className="font-medium text-white">{Number.parseFloat(balance.zauToken).toFixed(2)} ZAU</p>
                           </div>
                         </div>
                       </div>
@@ -327,11 +330,10 @@ export default function BuyAnimalPage() {
                     {/* Purchase Button */}
                     <div className="space-y-3">
                       {!canAfford() && (
-                        <Alert variant="destructive">
-                          <AlertTriangle className="h-4 w-4" />
+                        <Alert className="bg-red-500/20 text-red-100 border-red-400/30">
+                          <AlertTriangle className="h-4 w-4 text-red-100" />
                           <AlertDescription>
-                            Insufficient balance. You need {activeTrade.price} {activeTrade.currency} to purchase this
-                            animal.
+                            Insufficient balance. You need {activeTrade.price} {activeTrade.currency} to purchase this animal.
                           </AlertDescription>
                         </Alert>
                       )}
@@ -339,25 +341,24 @@ export default function BuyAnimalPage() {
                       <Button
                         onClick={handlePurchase}
                         disabled={purchasing || !canAfford() || walletLoading}
-                        className="w-full"
+                        className="w-full bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl"
                         size="lg"
                       >
                         {purchasing ? (
                           <>
-                            <LoadingSpinner size="sm" className="mr-2" />
+                            <LoadingSpinner size="sm" className="mr-2 text-white" />
                             Processing Purchase...
                           </>
                         ) : (
                           <>
-                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            <ShoppingCart className="h-4 w-4 mr-2 text-white/50" />
                             Buy Now for {activeTrade.price} {activeTrade.currency}
                           </>
                         )}
                       </Button>
 
-                      <p className="text-xs text-muted-foreground text-center">
-                        By purchasing, you agree to our terms of service and the blockchain transaction will be
-                        processed.
+                      <p className="text-xs text-white/70 text-center">
+                        By purchasing, you agree to our terms of service and the blockchain transaction will be processed.
                       </p>
                     </div>
                   </CardContent>
@@ -365,50 +366,50 @@ export default function BuyAnimalPage() {
               )}
 
               {/* Transaction Info */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2">
-                    <Wallet className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-white">
+                    <Wallet className="h-5 w-5 text-[#939896]" />
                     <span>Transaction Info</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-3 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Network</span>
-                    <span>Hedera Testnet</span>
+                    <span className="text-white/70">Network</span>
+                    <span className="text-white">Hedera Testnet</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">Transaction Type</span>
-                    <span>Atomic Swap</span>
+                    <span className="text-white/70">Transaction Type</span>
+                    <span className="text-white">Atomic Swap</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-muted-foreground">NFT Transfer</span>
+                    <span className="text-white/70">NFT Transfer</span>
                     <span className="flex items-center space-x-1">
                       <CheckCircle className="h-3 w-3 text-green-500" />
-                      <span>Included</span>
+                      <span className="text-white">Included</span>
                     </span>
                   </div>
-                  <Separator />
+                  <Separator className="bg-white/20" />
                   <div className="flex justify-between font-medium">
-                    <span>Estimated Gas Fee</span>
-                    <span>~0.001 HBAR</span>
+                    <span className="text-white/70">Estimated Gas Fee</span>
+                    <span className="text-white">~0.001 HBAR</span>
                   </div>
                 </CardContent>
               </Card>
 
               {/* Safety Notice */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
-                  <CardTitle className="flex items-center space-x-2 text-orange-600">
-                    <AlertTriangle className="h-5 w-5" />
+                  <CardTitle className="flex items-center space-x-2 text-orange-400">
+                    <AlertTriangle className="h-5 w-5 text-orange-400" />
                     <span>Important Notice</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent className="text-sm space-y-2">
-                  <p className="text-muted-foreground">• All transactions are final and cannot be reversed</p>
-                  <p className="text-muted-foreground">• Ensure you have sufficient balance for the purchase</p>
-                  <p className="text-muted-foreground">• The NFT will be transferred to your wallet upon completion</p>
-                  <p className="text-muted-foreground">• Contact support if you encounter any issues</p>
+                  <p className="text-white/70">• All transactions are final and cannot be reversed</p>
+                  <p className="text-white/70">• Ensure you have sufficient balance for the purchase</p>
+                  <p className="text-white/70">• The NFT will be transferred to your wallet upon completion</p>
+                  <p className="text-white/70">• Contact support if you encounter any issues</p>
                 </CardContent>
               </Card>
             </div>

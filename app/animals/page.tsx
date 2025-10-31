@@ -5,13 +5,13 @@ import { api } from "@/lib/api"
 import { useAuth } from "@/lib/auth-context"
 import { ProtectedRoute } from "@/components/auth/protected-route"
 import { Navbar } from "@/components/layout/navbar"
-import { Card, CardContent } from "@/components/ui/card"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Badge } from "@/components/ui/badge"
 import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs"
 import { ListAnimalModal } from "@/components/modals/list-animal-modal"
 import type { Animal, AnimalSpecies, AnimalFilters, AnimalGender } from "@/lib/types"
 import { Search, Filter, PlusCircle, Eye, Heart, Calendar, Coins, TrendingUp } from "lucide-react"
@@ -71,58 +71,66 @@ export default function AnimalsPage() {
     const isOwner = user?.id === animal.ownerId
     const canList = isOwner && !animal.isListed
     return (
-      <Card className="nft-card overflow-hidden">
-        <div className="aspect-square relative overflow-hidden">
+      <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg hover:shadow-xl transition-shadow rounded-2xl shadow-[#0288D1]/20 overflow-hidden group">
+        <div className="aspect-square relative overflow-hidden bg-white/5">
           <img
             src={animal.imageUrl || "/placeholder.svg?height=300&width=300&query=cute animal"}
             alt={animal.name}
-            className="w-full h-full object-cover"
+            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
           />
-          <div className="absolute top-2 right-2 flex space-x-1">
+          <div className="absolute top-3 right-3 flex space-x-1">
             {animal.tokenId && (
-              <Badge variant="secondary" className="bg-primary/90 text-primary-foreground">NFT</Badge>
+              <Badge className="bg-[#939896]/90 text-white">NFT</Badge>
             )}
             {animal.isListed && (
-              <Badge variant="default" className="bg-green-500/90 text-white">Listed</Badge>
+              <Badge className="bg-green-500/90 text-white">Listed</Badge>
             )}
           </div>
-          <div className="absolute top-2 left-2">
-            <Button variant="ghost" size="sm" className="h-8 w-8 p-0 bg-white/80 hover:bg-white">
+          <div className="absolute top-3 left-3">
+            <Button variant="ghost" size="sm" className="h-9 w-9 p-0 bg-white/20 backdrop-blur-sm hover:bg-white/30 text-white hover:text-white border-white/20">
               <Heart className="h-4 w-4" />
             </Button>
           </div>
         </div>
-        <CardContent className="p-4 space-y-2">
+        <CardContent className="p-5 space-y-3">
           <div className="flex items-center justify-between">
-            <h3 className="font-semibold text-lg truncate">{animal.name}</h3>
+            <h3 className="font-bold text-lg text-white truncate">{animal.name}</h3>
             {animal.aiPredictionValue && (
-              <div className="flex items-center text-sm text-muted-foreground">
-                <Coins className="h-3 w-3 mr-1" />
-                {animal.aiPredictionValue}
+              <div className="flex items-center text-sm text-[#939896]">
+                <Coins className="h-4 w-4 mr-1" />
+                {Number(animal.aiPredictionValue).toFixed(0)}
               </div>
             )}
           </div>
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <Badge variant="outline" className="text-xs">{animal.species}</Badge>
+          <div className="flex items-center space-x-2 text-sm text-white/70">
+            <Badge className="bg-white/15 text-white border-white/20 text-xs">{animal.species}</Badge>
             {animal.breed && <span>• {animal.breed}</span>}
             {animal.age && <span>• {animal.age}y</span>}
           </div>
           {animal.description && (
-            <p className="text-sm text-muted-foreground line-clamp-2">{animal.description}</p>
+            <p className="text-sm text-white/70 line-clamp-2">{animal.description}</p>
           )}
-          <div className="flex items-center justify-between pt-2">
-            <div className="flex items-center text-xs text-muted-foreground">
+          <div className="flex items-center justify-between pt-3">
+            <div className="flex items-center text-xs text-white/60">
               <Calendar className="h-3 w-3 mr-1" />
               {new Date(animal.createdAt).toLocaleDateString()}
             </div>
             <div className="flex space-x-2">
               {canList && (
-                <Button size="sm" onClick={() => handleListForTrade(animal)}>
+                <Button 
+                  size="sm" 
+                  onClick={() => handleListForTrade(animal)}
+                  className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-3"
+                >
                   <TrendingUp className="h-3 w-3 mr-1" />
                   List
                 </Button>
               )}
-              <Button asChild size="sm" variant="outline">
+              <Button 
+                asChild 
+                size="sm" 
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl px-3"
+              >
                 <Link href={`/animals/${animal.id}`}>
                   <Eye className="h-4 w-4 mr-1" />
                   View
@@ -137,71 +145,96 @@ export default function AnimalsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground">Animals</h1>
-              <p className="text-muted-foreground mt-2">Discover and manage blockchain-verified animals</p>
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-12 text-center sm:text-left">
+            <div className="sm:w-1/2">
+              <h1 className="text-4xl font-bold text-white mb-4 drop-shadow-md">
+                Animal Marketplace
+              </h1>
+              <p className="text-white/80 text-lg max-w-md">
+                Discover and manage blockchain-verified animals for trading
+              </p>
             </div>
-            <Button asChild>
+            <Button 
+              asChild
+              size="lg"
+              className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-8 py-3 mt-6 sm:mt-0 w-full sm:w-auto shadow-lg shadow-[#0288D1]/20"
+            >
               <Link href="/animals/create">
-                <PlusCircle className="h-4 w-4 mr-2" />
+                <PlusCircle className="h-5 w-5 mr-2" />
                 Register Animal
               </Link>
             </Button>
           </div>
 
-          <Card className="mb-8">
-            <CardContent className="p-6">
-              <div className="space-y-4">
+          {/* Filters Card */}
+          <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20 mb-10">
+            <CardContent className="p-8">
+              <div className="space-y-6">
                 <Tabs value={viewMode} onValueChange={(v) => setViewMode(v as any)}>
-                  <TabsList>
-                    <TabsTrigger value="all">All Animals</TabsTrigger>
-                    <TabsTrigger value="my-animals">My Animals</TabsTrigger>
-                    <TabsTrigger value="listed">Listed for Trade</TabsTrigger>
+                  <TabsList className="grid w-full grid-cols-3 bg-white/15 border-white/20 rounded-xl p-1">
+                    <TabsTrigger 
+                      value="all" 
+                      className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                    >
+                      All Animals
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="my-animals" 
+                      className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                    >
+                      My Animals
+                    </TabsTrigger>
+                    <TabsTrigger 
+                      value="listed" 
+                      className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                    >
+                      Listed for Trade
+                    </TabsTrigger>
                   </TabsList>
                 </Tabs>
 
                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
                   <div className="relative">
-                    <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
+                    <Search className="absolute left-3 top-3 h-4 w-4 text-white/50" />
                     <Input
                       placeholder="Search animals..."
                       value={searchTerm}
                       onChange={(e) => setSearchTerm(e.target.value)}
-                      className="pl-10"
+                      className="pl-10 bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
                     />
                   </div>
 
-                  {/* Species filter – no empty-string item */}
+                  {/* Species filter */}
                   <Select
                     value={filters.species ?? "ALL"}
                     onValueChange={(v) => handleFilterChange("species", v === "ALL" ? undefined : (v as AnimalSpecies))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                       <SelectValue placeholder="Species" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
                       <SelectItem value="ALL">All Species</SelectItem>
                       {speciesOptions.map((s) => (
-                        <SelectItem key={s} value={s}>
+                        <SelectItem key={s} value={s} className="text-white">
                           {s}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
 
-                  {/* Gender filter – no empty-string item */}
+                  {/* Gender filter */}
                   <Select
                     value={filters.gender ?? "ALL"}
                     onValueChange={(v) => handleFilterChange("gender", v === "ALL" ? undefined : (v as AnimalGender))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                       <SelectValue placeholder="Gender" />
                     </SelectTrigger>
-                    <SelectContent>
+                    <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
                       <SelectItem value="ALL">All Genders</SelectItem>
                       <SelectItem value="MALE">Male</SelectItem>
                       <SelectItem value="FEMALE">Female</SelectItem>
@@ -209,7 +242,11 @@ export default function AnimalsPage() {
                   </Select>
 
                   <div className="flex space-x-2">
-                    <Button variant="outline" onClick={clearFilters} className="bg-transparent">
+                    <Button 
+                      variant="outline" 
+                      onClick={clearFilters} 
+                      className="bg-transparent border-white/20 text-white hover:bg-white/10 rounded-xl px-4"
+                    >
                       <Filter className="h-4 w-4 mr-2" />
                       Clear
                     </Button>
@@ -220,54 +257,65 @@ export default function AnimalsPage() {
           </Card>
 
           {loading ? (
-            <div className="flex justify-center py-12">
+            <div className="flex justify-center py-20">
               <LoadingSpinner size="lg" />
             </div>
           ) : animals.length ? (
             <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 mb-12">
                 {animals.map((a) => (
                   <AnimalCard key={a.id} animal={a} />
                 ))}
               </div>
 
               {totalPages > 1 && (
-                <div className="flex justify-center space-x-2">
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-                    disabled={currentPage === 1}
-                  >
-                    Previous
-                  </Button>
-                  <span className="flex items-center px-4 text-sm text-muted-foreground">
-                    Page {currentPage} of {totalPages}
-                  </span>
-                  <Button
-                    variant="outline"
-                    onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
-                    disabled={currentPage === totalPages}
-                  >
-                    Next
-                  </Button>
-                </div>
+                <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
+                  <CardContent className="p-8 flex items-center justify-center space-x-4">
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                      disabled={currentPage === 1}
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl px-6"
+                    >
+                      Previous
+                    </Button>
+                    <span className="text-lg font-medium text-white">
+                      Page {currentPage} of {totalPages}
+                    </span>
+                    <Button
+                      variant="outline"
+                      onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                      disabled={currentPage === totalPages}
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl px-6"
+                    >
+                      Next
+                    </Button>
+                  </CardContent>
+                </Card>
               )}
             </>
           ) : (
-            <div className="text-center py-12">
-              <div className="w-24 h-24 bg-muted rounded-full flex items-center justify-center mx-auto mb-4">
-                <Search className="h-12 w-12 text-muted-foreground" />
-              </div>
-              <h3 className="text-lg font-medium mb-2">No animals found</h3>
-              <p className="text-muted-foreground mb-6">
-                {searchTerm || Object.keys(filters).length
-                  ? "Try adjusting your search or filters"
-                  : "Be the first to register an animal"}
-              </p>
-              <Button asChild>
-                <Link href="/animals/create">Register Your First Animal</Link>
-              </Button>
-            </div>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20 max-w-2xl mx-auto">
+              <CardContent className="p-12 text-center space-y-6">
+                <div className="w-28 h-28 bg-white/15 rounded-2xl flex items-center justify-center mx-auto border border-white/20">
+                  <Search className="h-12 w-12 text-white/50" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-bold text-white mb-2">No animals found</h3>
+                  <p className="text-white/70 text-lg">
+                    {searchTerm || Object.keys(filters).length
+                      ? "Try adjusting your search or filters"
+                      : "Be the first to register an animal"}
+                  </p>
+                </div>
+                <Button 
+                  asChild
+                  className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-8 py-3 shadow-lg shadow-[#0288D1]/20"
+                >
+                  <Link href="/animals/create">Register Your First Animal</Link>
+                </Button>
+              </CardContent>
+            </Card>
           )}
 
           {selectedAnimal && (

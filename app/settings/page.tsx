@@ -33,131 +33,135 @@ export default function SettingsPage() {
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
-
-        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground flex items-center space-x-2">
-              <Settings className="h-8 w-8" />
+        <main className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+          <div className="mb-12">
+            <h1 className="text-3xl font-bold text-white flex items-center space-x-2">
+              <Settings className="h-8 w-8 text-[#939896]" />
               <span>Settings</span>
             </h1>
-            <p className="text-muted-foreground mt-2">Customize your Zauro marketplace experience</p>
+            <p className="text-white/70 mt-2">Customize your Zauro marketplace experience</p>
           </div>
 
-          <div className="space-y-6">
+          <div className="space-y-8">
             {/* Notifications */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Bell className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Bell className="h-5 w-5 text-[#939896]" />
                   <span>Notifications</span>
                 </CardTitle>
-                <CardDescription>Manage how you receive updates about your trades and animals</CardDescription>
+                <CardDescription className="text-white/70">Manage how you receive updates about your trades and animals</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base flex items-center space-x-2">
-                      <Mail className="h-4 w-4" />
+                    <Label className="text-base text-white flex items-center space-x-2">
+                      <Mail className="h-4 w-4 text-white/50" />
                       <span>Email Notifications</span>
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/70">
                       Receive trade updates and important announcements via email
                     </p>
                   </div>
                   <Switch
                     checked={settings.emailNotifications}
                     onCheckedChange={(checked) => handleSettingChange("emailNotifications", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base flex items-center space-x-2">
-                      <Smartphone className="h-4 w-4" />
+                    <Label className="text-base text-white flex items-center space-x-2">
+                      <Smartphone className="h-4 w-4 text-white/50" />
                       <span>SMS Notifications</span>
                     </Label>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="text-sm text-white/70">
                       Get instant SMS alerts for time-sensitive trade updates
                     </p>
                   </div>
                   <Switch
                     checked={settings.smsNotifications}
                     onCheckedChange={(checked) => handleSettingChange("smsNotifications", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base flex items-center space-x-2">
-                      <Bell className="h-4 w-4" />
+                    <Label className="text-base text-white flex items-center space-x-2">
+                      <Bell className="h-4 w-4 text-white/50" />
                       <span>Push Notifications</span>
                     </Label>
-                    <p className="text-sm text-muted-foreground">Browser notifications for real-time updates</p>
+                    <p className="text-sm text-white/70">Browser notifications for real-time updates</p>
                   </div>
                   <Switch
                     checked={settings.pushNotifications}
                     onCheckedChange={(checked) => handleSettingChange("pushNotifications", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Appearance */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Moon className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Moon className="h-5 w-5 text-[#939896]" />
                   <span>Appearance</span>
                 </CardTitle>
-                <CardDescription>Customize the look and feel of your dashboard</CardDescription>
+                <CardDescription className="text-white/70">Customize the look and feel of your dashboard</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Dark Mode</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label className="text-base text-white">Dark Mode</Label>
+                    <p className="text-sm text-white/70">
                       Switch to dark theme for better viewing in low light
                     </p>
                   </div>
                   <Switch
                     checked={settings.darkMode}
                     onCheckedChange={(checked) => handleSettingChange("darkMode", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Sound Effects</Label>
-                    <p className="text-sm text-muted-foreground">Play sounds for trade notifications and actions</p>
+                    <Label className="text-base text-white">Sound Effects</Label>
+                    <p className="text-sm text-white/70">Play sounds for trade notifications and actions</p>
                   </div>
                   <Switch
                     checked={settings.soundEffects}
                     onCheckedChange={(checked) => handleSettingChange("soundEffects", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Preferences */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Globe className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Globe className="h-5 w-5 text-[#939896]" />
                   <span>Preferences</span>
                 </CardTitle>
-                <CardDescription>Set your language, currency, and regional preferences</CardDescription>
+                <CardDescription className="text-white/70">Set your language, currency, and regional preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-6">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="space-y-2">
-                    <Label>Language</Label>
+                    <Label className="text-white">Language</Label>
                     <Select value={settings.language} onValueChange={(value) => handleSettingChange("language", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white/10 border-white/20 text-white">
                         <SelectItem value="en">English</SelectItem>
                         <SelectItem value="es">Español</SelectItem>
                         <SelectItem value="fr">Français</SelectItem>
@@ -167,12 +171,12 @@ export default function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label>Default Currency</Label>
+                    <Label className="text-white">Default Currency</Label>
                     <Select value={settings.currency} onValueChange={(value) => handleSettingChange("currency", value)}>
-                      <SelectTrigger>
+                      <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
                         <SelectValue />
                       </SelectTrigger>
-                      <SelectContent>
+                      <SelectContent className="bg-white/10 border-white/20 text-white">
                         <SelectItem value="HBAR">HBAR</SelectItem>
                         <SelectItem value="ZAU">ZAU Token</SelectItem>
                       </SelectContent>
@@ -182,61 +186,74 @@ export default function SettingsPage() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-base">Auto-refresh Data</Label>
-                    <p className="text-sm text-muted-foreground">Automatically refresh balances and trade data</p>
+                    <Label className="text-base text-white">Auto-refresh Data</Label>
+                    <p className="text-sm text-white/70">Automatically refresh balances and trade data</p>
                   </div>
                   <Switch
                     checked={settings.autoRefresh}
                     onCheckedChange={(checked) => handleSettingChange("autoRefresh", checked)}
+                    className="data-[state=unchecked]:bg-white/15 data-[state=checked]:bg-[#093102]"
                   />
                 </div>
               </CardContent>
             </Card>
 
             {/* Privacy & Security */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
               <CardHeader>
-                <CardTitle className="flex items-center space-x-2">
-                  <Shield className="h-5 w-5" />
+                <CardTitle className="flex items-center space-x-2 text-white">
+                  <Shield className="h-5 w-5 text-[#939896]" />
                   <span>Privacy & Security</span>
                 </CardTitle>
-                <CardDescription>Manage your privacy settings and security preferences</CardDescription>
+                <CardDescription className="text-white/70">Manage your privacy settings and security preferences</CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Two-Factor Authentication</p>
-                    <p className="text-sm text-muted-foreground">Add an extra layer of security to your account</p>
+                    <p className="font-medium text-white">Two-Factor Authentication</p>
+                    <p className="text-sm text-white/70">Add an extra layer of security to your account</p>
                   </div>
                   <div className="flex items-center space-x-2">
-                    <Badge variant="outline">Not Enabled</Badge>
-                    <Button variant="outline" size="sm">
+                    <Badge className="border-white/20 text-white/80 bg-transparent">Not Enabled</Badge>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                    >
                       Enable
                     </Button>
                   </div>
                 </div>
 
-                <Separator />
+                <Separator className="bg-white/20" />
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Data Export</p>
-                    <p className="text-sm text-muted-foreground">Download your account data and trading history</p>
+                    <p className="font-medium text-white">Data Export</p>
+                    <p className="text-sm text-white/70">Download your account data and trading history</p>
                   </div>
-                  <Button variant="outline" size="sm">
-                    <Database className="h-4 w-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                  >
+                    <Database className="h-4 w-4 mr-2 text-white/50" />
                     Export Data
                   </Button>
                 </div>
 
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="font-medium">Account Deletion</p>
-                    <p className="text-sm text-muted-foreground">
+                    <p className="font-medium text-white">Account Deletion</p>
+                    <p className="text-sm text-white/70">
                       Permanently delete your account and all associated data
                     </p>
                   </div>
-                  <Button variant="destructive" size="sm">
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="bg-red-500/90 text-white hover:bg-red-500/80 rounded-xl"
+                  >
                     Delete Account
                   </Button>
                 </div>
@@ -245,8 +262,15 @@ export default function SettingsPage() {
 
             {/* Save Changes */}
             <div className="flex justify-end space-x-4">
-              <Button variant="outline">Reset to Defaults</Button>
-              <Button>Save Changes</Button>
+              <Button
+                variant="outline"
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+              >
+                Reset to Defaults
+              </Button>
+              <Button className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl">
+                Save Changes
+              </Button>
             </div>
           </div>
         </main>

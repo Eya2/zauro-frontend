@@ -81,7 +81,7 @@ export interface Animal {
   aiPredictionValue?: number | null;
   ownerId: string;
   isListed: boolean;
-  status: "PENDING_EXPERT_REVIEW" | "APPROVED" | "REJECTED" | "EXPIRED";
+  status: "PENDING_EXPERT_REVIEW" | "EXPERT_APPROVED" | "EXPERT_REJECTED" | "EXPIRED";
   expertReviewedBy?: string | null;
   expertReviewComment?: string | null;
   expertReviewDate?: string | null;
@@ -112,6 +112,8 @@ export interface CreateAnimalDto {
   age?: number;
   description?: string;
   aiPredictionValue?: number;
+  status?: "PENDING_EXPERT_REVIEW" | "EXPERT_APPROVED" | "EXPERT_REJECTED" | "EXPIRED";
+  isListed?: boolean;
 }
 
 // types/animal.ts  (or types/index.ts if you re-export everything from there)

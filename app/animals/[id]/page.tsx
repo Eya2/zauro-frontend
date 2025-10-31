@@ -14,8 +14,6 @@ import { LoadingSpinner } from "@/components/ui/loading-spinner"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useToast } from "@/hooks/use-toast"
-
-/* ---------- shadcn Dialog & form ---------- */
 import {
   Dialog,
   DialogContent,
@@ -28,11 +26,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Textarea } from "@/components/ui/textarea"
-
-/* ---------- types ---------- */
 import type { Animal, UpdateAnimalDto } from "@/lib/types"
-
-/* ---------- icons ---------- */
 import {
   ArrowLeft,
   Edit,
@@ -55,20 +49,14 @@ export default function AnimalDetailPage() {
   const { toast } = useToast()
   const animalId = params.id as string
 
-  /* ---------- data ---------- */
   const [animal, setAnimal] = useState<Animal | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState("")
-
-  /* ---------- edit modal ---------- */
   const [editOpen, setEditOpen] = useState(false)
   const [editData, setEditData] = useState<UpdateAnimalDto>({})
   const [saving, setSaving] = useState(false)
-
-  /* ---------- delete modal ---------- */
   const [delOpen, setDelOpen] = useState(false)
 
-  /* ---------- fetch ---------- */
   useEffect(() => {
     if (animalId) fetchAnimal()
   }, [animalId])
@@ -85,7 +73,6 @@ export default function AnimalDetailPage() {
     }
   }
 
-  /* ---------- pré-remplissage ---------- */
   useEffect(() => {
     if (!animal) return
     setEditData({
@@ -96,10 +83,11 @@ export default function AnimalDetailPage() {
       age: animal.age ?? undefined,
       description: animal.description ?? undefined,
       aiPredictionValue: animal.aiPredictionValue ?? undefined,
+      status : "PENDING_EXPERT_REVIEW" , 
+      isListed : false 
     })
   }, [animal])
 
-  /* ---------- save ---------- */
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!animal) return
@@ -120,7 +108,6 @@ export default function AnimalDetailPage() {
     }
   }
 
-  /* ---------- delete ---------- */
   const handleDelete = async () => {
     setDelOpen(false)
     if (!animal) return
@@ -137,7 +124,6 @@ export default function AnimalDetailPage() {
     }
   }
 
-  /* ---------- utils ---------- */
   const copyToClipboard = (text: string, label: string) => {
     navigator.clipboard.writeText(text)
     toast({ title: "Copied", description: `${label} copied to clipboard.` })
@@ -145,14 +131,13 @@ export default function AnimalDetailPage() {
 
   const isOwner = user && animal && user.id === animal.ownerId
 
-  /* ---------- loading / error ---------- */
   if (loading)
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
           <Navbar />
           <div className="flex justify-center items-center py-20">
-            <LoadingSpinner size="lg" />
+            <LoadingSpinner size="lg" className="text-white" />
           </div>
         </div>
       </ProtectedRoute>
@@ -161,13 +146,16 @@ export default function AnimalDetailPage() {
   if (error || !animal)
     return (
       <ProtectedRoute>
-        <div className="min-h-screen bg-background">
+        <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
           <Navbar />
-          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-            <Alert variant="destructive">
+          <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <Alert className="bg-red-500/20 text-red-100 border-red-400/30">
               <AlertDescription>{error || "Animal not found"}</AlertDescription>
             </Alert>
-            <Button asChild className="mt-4">
+            <Button
+              asChild
+              className="mt-6 bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl px-6"
+            >
               <Link href="/animals">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Animals
@@ -178,37 +166,58 @@ export default function AnimalDetailPage() {
       </ProtectedRoute>
     )
 
-  /* ---------- render ---------- */
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
-        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
           {/* header */}
-          <div className="flex items-center justify-between mb-8">
-            <Button variant="ghost" asChild>
+          <div className="flex items-center justify-between mb-12">
+            <Button
+              variant="ghost"
+              className="text-white/60 hover:text-white hover:bg-white/10"
+              asChild
+            >
               <Link href="/animals">
                 <ArrowLeft className="h-4 w-4 mr-2" />
                 Back to Animals
               </Link>
             </Button>
-            <div className="flex space-x-2">
-              <Button variant="outline" size="sm">
-                <Share2 className="h-4 w-4 mr-2" />
+            <div className="flex space-x-3">
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+              >
+                <Share2 className="h-4 w-4 mr-2 text-white/50" />
                 Share
               </Button>
-              <Button variant="outline" size="sm">
-                <Heart className="h-4 w-4 mr-2" />
+              <Button
+                variant="outline"
+                size="sm"
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+              >
+                <Heart className="h-4 w-4 mr-2 text-white/50" />
                 Favorite
               </Button>
               {isOwner && (
                 <>
-                  <Button variant="outline" size="sm" onClick={() => setEditOpen(true)}>
-                    <Edit className="h-4 w-4 mr-2" />
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setEditOpen(true)}
+                    className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                  >
+                    <Edit className="h-4 w-4 mr-2 text-white/50" />
                     Edit
                   </Button>
-                  <Button variant="destructive" size="sm" onClick={() => setDelOpen(true)}>
-                    <Trash2 className="h-4 w-4 mr-2" />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => setDelOpen(true)}
+                    className="bg-red-500/90 text-white hover:bg-red-500/80 rounded-xl"
+                  >
+                    <Trash2 className="h-4 w-4 mr-2 text-white/50" />
                     Delete
                   </Button>
                 </>
@@ -218,26 +227,22 @@ export default function AnimalDetailPage() {
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* main */}
-            <div className="lg:col-span-2 space-y-6">
+            <div className="lg:col-span-2 space-y-8">
               {/* image */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardContent className="p-0">
-                  <div className="aspect-video relative overflow-hidden rounded-lg">
+                  <div className="aspect-video relative overflow-hidden rounded-t-2xl">
                     <img
                       src={animal.imageUrl || "/placeholder.svg?height=400&width=600&query=cute animal"}
                       alt={animal.name}
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                     />
                     <div className="absolute top-4 right-4 flex space-x-2">
                       {animal.tokenId && (
-                        <Badge variant="secondary" className="bg-primary/90 text-primary-foreground">
-                          NFT
-                        </Badge>
+                        <Badge className="bg-[#939896]/90 text-white">NFT</Badge>
                       )}
                       {animal.isListed && (
-                        <Badge variant="default" className="bg-green-500/90 text-white">
-                          Listed for Trade
-                        </Badge>
+                        <Badge className="bg-green-500/90 text-white">Listed for Trade</Badge>
                       )}
                     </div>
                   </div>
@@ -245,19 +250,19 @@ export default function AnimalDetailPage() {
               </Card>
 
               {/* details */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div>
-                      <CardTitle className="text-2xl">{animal.name}</CardTitle>
-                      <CardDescription className="text-lg mt-1">
+                      <CardTitle className="text-3xl font-bold text-white">{animal.name}</CardTitle>
+                      <CardDescription className="text-lg text-white/70 mt-2">
                         {animal.species} {animal.breed && `• ${animal.breed}`} {animal.age && `• ${animal.age} years old`}
                       </CardDescription>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-muted-foreground">AI Predicted Value</p>
-                      <p className="text-xl font-bold flex items-center">
-                        <Coins className="h-5 w-5 mr-1" />
+                      <p className="text-sm text-white/70">AI Predicted Value</p>
+                      <p className="text-xl font-bold flex items-center text-white">
+                        <Coins className="h-5 w-5 mr-1 text-[#939896]" />
                         {animal.aiPredictionValue != null
                           ? Number(animal.aiPredictionValue).toFixed(0)
                           : "—"}{" "}
@@ -269,8 +274,8 @@ export default function AnimalDetailPage() {
                 <CardContent>
                   {animal.description && (
                     <div>
-                      <h3 className="font-medium mb-2">Description</h3>
-                      <p className="text-muted-foreground leading-relaxed">{animal.description}</p>
+                      <h3 className="font-medium text-white mb-3">Description</h3>
+                      <p className="text-white/70 leading-relaxed">{animal.description}</p>
                     </div>
                   )}
                 </CardContent>
@@ -278,45 +283,60 @@ export default function AnimalDetailPage() {
 
               {/* tabs */}
               <Tabs defaultValue="details" className="w-full">
-                <TabsList>
-                  <TabsTrigger value="details">Details</TabsTrigger>
-                  <TabsTrigger value="blockchain">Blockchain</TabsTrigger>
-                  <TabsTrigger value="documents">Documents</TabsTrigger>
+                <TabsList className="grid w-full grid-cols-3 bg-white/15 border-white/20 rounded-xl p-1">
+                  <TabsTrigger
+                    value="details"
+                    className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                  >
+                    Details
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="blockchain"
+                    className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                  >
+                    Blockchain
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="documents"
+                    className="text-white/80 data-[state=active]:bg-[#093102] data-[state=active]:text-white rounded-lg"
+                  >
+                    Documents
+                  </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="details" className="space-y-4">
-                  <Card>
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                     <CardContent className="p-6">
                       <div className="grid grid-cols-2 gap-4">
                         <div>
-                          <p className="text-sm text-muted-foreground">Species</p>
-                          <p className="font-medium">{animal.species}</p>
+                          <p className="text-sm text-white/70">Species</p>
+                          <p className="font-medium text-white">{animal.species}</p>
                         </div>
                         {animal.breed && (
                           <div>
-                            <p className="text-sm text-muted-foreground">Breed</p>
-                            <p className="font-medium">{animal.breed}</p>
+                            <p className="text-sm text-white/70">Breed</p>
+                            <p className="font-medium text-white">{animal.breed}</p>
                           </div>
                         )}
                         {animal.age && (
                           <div>
-                            <p className="text-sm text-muted-foreground">Age</p>
-                            <p className="font-medium">{animal.age} years</p>
+                            <p className="text-sm text-white/70">Age</p>
+                            <p className="font-medium text-white">{animal.age} years</p>
                           </div>
                         )}
                         <div>
-                          <p className="text-sm text-muted-foreground">Registered</p>
-                          <p className="font-medium">{new Date(animal.createdAt).toLocaleDateString()}</p>
+                          <p className="text-sm text-white/70">Registered</p>
+                          <p className="font-medium text-white">{new Date(animal.createdAt).toLocaleDateString()}</p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Owner</p>
-                          <p className="font-medium">
+                          <p className="text-sm text-white/70">Owner</p>
+                          <p className="font-medium text-white">
                             {animal.owner ? `${animal.owner.firstName} ${animal.owner.lastName}` : "Unknown"}
                           </p>
                         </div>
                         <div>
-                          <p className="text-sm text-muted-foreground">Status</p>
-                          <Badge variant={animal.isListed ? "default" : "secondary"}>
+                          <p className="text-sm text-white/70">Status</p>
+                          <Badge className={animal.isListed ? "bg-green-500/90 text-white" : "bg-white/15 text-white border-white/20"}>
                             {animal.isListed ? "Listed for Trade" : "Not Listed"}
                           </Badge>
                         </div>
@@ -326,49 +346,54 @@ export default function AnimalDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="blockchain" className="space-y-4">
-                  <Card>
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                     <CardHeader>
-                      <CardTitle>NFT Information</CardTitle>
-                      <CardDescription>Blockchain details for this animal NFT</CardDescription>
+                      <CardTitle className="text-white">NFT Information</CardTitle>
+                      <CardDescription className="text-white/70">Blockchain details for this animal NFT</CardDescription>
                     </CardHeader>
                     <CardContent>
                       {animal.tokenId ? (
                         <div className="space-y-4">
-                          <div className="flex items-center justify-between p-3 border rounded-lg">
+                          <div className="flex items-center justify-between p-3 border border-white/20 rounded-xl bg-white/15">
                             <div>
-                              <p className="font-medium">Token ID</p>
-                              <p className="text-sm text-muted-foreground font-mono">{animal.tokenId}</p>
+                              <p className="font-medium text-white">Token ID</p>
+                              <p className="text-sm text-white/70 font-mono">{animal.tokenId}</p>
                             </div>
                             <Button
                               variant="outline"
                               size="sm"
                               onClick={() => copyToClipboard(animal.tokenId!, "Token ID")}
+                              className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
                             >
-                              <Copy className="h-4 w-4" />
+                              <Copy className="h-4 w-4 text-white/50" />
                             </Button>
                           </div>
                           {animal.tokenSerialNumber && (
-                            <div className="flex items-center justify-between p-3 border rounded-lg">
+                            <div className="flex items-center justify-between p-3 border border-white/20 rounded-xl bg-white/15">
                               <div>
-                                <p className="font-medium">Serial Number</p>
-                                <p className="text-sm text-muted-foreground">{animal.tokenSerialNumber}</p>
+                                <p className="font-medium text-white">Serial Number</p>
+                                <p className="text-sm text-white/70">{animal.tokenSerialNumber}</p>
                               </div>
                               <Button
                                 variant="outline"
                                 size="sm"
                                 onClick={() => copyToClipboard(animal.tokenSerialNumber!, "Serial Number")}
+                                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
                               >
-                                <Copy className="h-4 w-4" />
+                                <Copy className="h-4 w-4 text-white/50" />
                               </Button>
                             </div>
                           )}
-                          <Button variant="outline" className="w-full bg-transparent">
-                            <ExternalLink className="h-4 w-4 mr-2" />
+                          <Button
+                            variant="outline"
+                            className="w-full border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                          >
+                            <ExternalLink className="h-4 w-4 mr-2 text-white/50" />
                             View on Hedera Explorer
                           </Button>
                         </div>
                       ) : (
-                        <Alert>
+                        <Alert className="bg-white/15 text-white border-white/20">
                           <AlertDescription>This animal has not been minted as an NFT yet.</AlertDescription>
                         </Alert>
                       )}
@@ -377,30 +402,35 @@ export default function AnimalDetailPage() {
                 </TabsContent>
 
                 <TabsContent value="documents" className="space-y-4">
-                  <Card>
+                  <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                     <CardHeader>
-                      <CardTitle>Documents</CardTitle>
-                      <CardDescription>Veterinary records and other documents</CardDescription>
+                      <CardTitle className="text-white">Documents</CardTitle>
+                      <CardDescription className="text-white/70">Veterinary records and other documents</CardDescription>
                     </CardHeader>
                     <CardContent>
                       {animal.vetRecordUrl ? (
-                        <div className="flex items-center justify-between p-3 border rounded-lg">
+                        <div className="flex items-center justify-between p-3 border border-white/20 rounded-xl bg-white/15">
                           <div className="flex items-center space-x-3">
-                            <FileText className="h-8 w-8 text-muted-foreground" />
+                            <FileText className="h-8 w-8 text-white/50" />
                             <div>
-                              <p className="font-medium">Veterinary Records</p>
-                              <p className="text-sm text-muted-foreground">Health certificates and medical history</p>
+                              <p className="font-medium text-white">Veterinary Records</p>
+                              <p className="text-sm text-white/70">Health certificates and medical history</p>
                             </div>
                           </div>
-                          <Button variant="outline" size="sm" asChild>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            asChild
+                            className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                          >
                             <a href={animal.vetRecordUrl} target="_blank" rel="noopener noreferrer">
-                              <Eye className="h-4 w-4 mr-2" />
+                              <Eye className="h-4 w-4 mr-2 text-white/50" />
                               View
                             </a>
                           </Button>
                         </div>
                       ) : (
-                        <Alert>
+                        <Alert className="bg-white/15 text-white border-white/20">
                           <AlertDescription>No documents have been uploaded for this animal.</AlertDescription>
                         </Alert>
                       )}
@@ -411,60 +441,72 @@ export default function AnimalDetailPage() {
             </div>
 
             {/* sidebar */}
-            <div className="space-y-6">
+            <div className="space-y-8">
               {/* trading */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
-                  <CardTitle>Trading</CardTitle>
-                  <CardDescription>Buy or sell this animal</CardDescription>
+                  <CardTitle className="text-white">Trading</CardTitle>
+                  <CardDescription className="text-white/70">Buy or sell this animal</CardDescription>
                 </CardHeader>
                 <CardContent className="space-y-4">
                   {animal.isListed ? (
                     <div className="space-y-4">
-                      <div className="text-center p-4 bg-green-50 dark:bg-green-950 rounded-lg">
-                        <p className="text-sm text-green-600 dark:text-green-400">Available for Trade</p>
-                        <p className="text-2xl font-bold text-green-700 dark:text-green-300">Listed</p>
+                      <div className="text-center p-4 bg-green-500/20 border border-green-500/30 rounded-xl">
+                        <p className="text-sm text-green-400">Available for Trade</p>
+                        <p className="text-2xl font-bold text-green-300">Listed</p>
                       </div>
                       {!isOwner && (
-                        <Button asChild className="w-full">
+                        <Button
+                          asChild
+                          className="w-full bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl"
+                        >
                           <Link href={`/animals/${animal.id}/buy`}>
-                            <ShoppingCart className="h-4 w-4 mr-2" />
+                            <ShoppingCart className="h-4 w-4 mr-2 text-white/50" />
                             Buy Now
                           </Link>
                         </Button>
                       )}
                     </div>
-                  ) : (
+                  ) : 
+                   animal!.status ==="EXPERT_APPROVED" ? (
                     <div className="space-y-4">
-                      <Alert>
+                      <Alert className="bg-white/15 text-white border-white/20">
                         <AlertDescription>This animal is not currently listed for trade.</AlertDescription>
                       </Alert>
                       {isOwner && (
-                        <Button variant="outline" className="w-full bg-transparent">
-                          <ShoppingCart className="h-4 w-4 mr-2" />
+                        <Button
+                          variant="outline"
+                          className="w-full border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                        >
+                          <ShoppingCart className="h-4 w-4 mr-2 text-white/50" />
                           List for Trade
                         </Button>
                       )}
-                    </div>
-                  )}
+                    </div>) : (
+                      <Alert className="bg-red-500/20 text-red-100 border-red-400/30">
+                        <AlertDescription>
+                          This animal cannot be listed for trade until it is expert approved.
+                        </AlertDescription>
+                      </Alert>)}
+                  
                 </CardContent>
               </Card>
 
               {/* owner */}
-              <Card>
+              <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
                 <CardHeader>
-                  <CardTitle>Owner</CardTitle>
+                  <CardTitle className="text-white">Owner</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex items-center space-x-3">
-                    <div className="w-10 h-10 bg-primary rounded-full flex items-center justify-center">
-                      <span className="text-primary-foreground font-medium">{animal.owner?.firstName?.[0] || "U"}</span>
+                    <div className="w-10 h-10 bg-[#093102] rounded-full flex items-center justify-center">
+                      <span className="text-white font-medium">{animal.owner?.firstName?.[0] || "U"}</span>
                     </div>
                     <div>
-                      <p className="font-medium">
+                      <p className="font-medium text-white">
                         {animal.owner ? `${animal.owner.firstName} ${animal.owner.lastName}` : "Unknown Owner"}
                       </p>
-                      <p className="text-sm text-muted-foreground">{animal.owner?.email || "No contact info"}</p>
+                      <p className="text-sm text-white/70">{animal.owner?.email || "No contact info"}</p>
                     </div>
                   </div>
                 </CardContent>
@@ -472,152 +514,160 @@ export default function AnimalDetailPage() {
             </div>
           </div>
         </main>
-        {/* ---------- EDIT MODAL ---------- */}
-<Dialog open={editOpen} onOpenChange={setEditOpen}>
-  <DialogContent className="sm:max-w-2xl">
-    <DialogHeader>
-      <DialogTitle>Edit animal</DialogTitle>
-      <DialogDescription>Modify the information below and save.</DialogDescription>
-    </DialogHeader>
 
-    <form onSubmit={handleSave} className="grid gap-4 py-2">
-      {/* ------- basic fields (unchanged) ------- */}
-      <div className="grid grid-cols-2 gap-4">
-        <div className="col-span-2">
-          <Label>Name</Label>
-          <Input
-            value={editData.name || ""}
-            onChange={(e) => setEditData({ ...editData, name: e.target.value })}
-            required
-          />
-        </div>
-
-        <div>
-          <Label>Species</Label>
-          <Select
-            value={editData.species || ""}
-            onValueChange={(v) => setEditData({ ...editData, species: v as any })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pick a species" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="COW">Cow</SelectItem>
-              <SelectItem value="SHEEP">Sheep</SelectItem>
-              <SelectItem value="GOAT">Goat</SelectItem>
-              <SelectItem value="OTHER">Other</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Gender</Label>
-          <Select
-            value={editData.gender || ""}
-            onValueChange={(v) => setEditData({ ...editData, gender: v as any })}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Pick a gender" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="MALE">Male</SelectItem>
-              <SelectItem value="FEMALE">Female</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
-
-        <div>
-          <Label>Breed</Label>
-          <Input
-            value={editData.breed || ""}
-            onChange={(e) => setEditData({ ...editData, breed: e.target.value })}
-          />
-        </div>
-
-        <div>
-          <Label>Age (years)</Label>
-          <Input
-            type="number"
-            value={editData.age || ""}
-            onChange={(e) => setEditData({ ...editData, age: Number(e.target.value) })}
-          />
-        </div>
-
-        <div className="col-span-2">
-          <Label>Description</Label>
-          <Textarea
-            value={editData.description || ""}
-            onChange={(e) => setEditData({ ...editData, description: e.target.value })}
-            rows={3}
-          />
-        </div>
-
-        <div className="col-span-2">
-          <Label>AI Predicted Value (HBAR)</Label>
-          <Input
-            type="number"
-            step="0.01"
-            value={editData.aiPredictionValue || ""}
-            onChange={(e) => setEditData({ ...editData, aiPredictionValue: Number(e.target.value) })}
-          />
-        </div>
-      </div>
-
-      {/* ------- NEW : IMAGE UPLOAD ------- */}
-      <div className="col-span-2">
-        <Label>Animal Image</Label>
-        <FileUploader
-          accept="image/*"
-          onUpload={async (file) => {
-            const { imageUrl } = await api.uploadAnimalImage(animal!.id, file)
-            setAnimal((prev) => (prev ? { ...prev, imageUrl } : prev))
-            toast({ title: "Image uploaded", description: "Animal picture updated." })
-          }}
-        />
-      </div>
-
-      {/* ------- NEW : VET RECORD UPLOAD ------- */}
-      <div className="col-span-2">
-        <Label>Veterinary Record</Label>
-        <FileUploader
-          accept=".pdf,.doc,.docx"
-          onUpload={async (file) => {
-            const { vetRecordUrl } = await api.uploadVetRecord(animal!.id, file)
-            setAnimal((prev) => (prev ? { ...prev, vetRecordUrl } : prev))
-            toast({ title: "Record uploaded", description: "Vet record updated." })
-          }}
-        />
-      </div>
-
-      <DialogFooter className="gap-2">
-        <Button type="button" variant="outline" onClick={() => setEditOpen(false)}>
-          Cancel
-        </Button>
-        <Button type="submit" disabled={saving}>
-          {saving && <LoadingSpinner className="mr-2 h-4 w-4" />}
-          Save
-        </Button>
-      </DialogFooter>
-    </form>
-  </DialogContent>
-</Dialog>
-
-        {/* ---------- DELETE CONFIRMATION MODAL ---------- */}
-        <Dialog open={delOpen} onOpenChange={setDelOpen}>
-          <DialogContent className="sm:max-w-md">
+        {/* Edit Modal */}
+        <Dialog open={editOpen} onOpenChange={setEditOpen}>
+          <DialogContent className="sm:max-w-2xl bg-white/10 backdrop-blur-xl border-white/20 text-white">
             <DialogHeader>
-              <DialogTitle>Confirm deletion</DialogTitle>
-              <DialogDescription>
-                Are you sure you want to permanently delete <strong>{animal.name}</strong>?
-                This action cannot be undone.
+              <DialogTitle className="text-white">Edit Animal</DialogTitle>
+              <DialogDescription className="text-white/70">Modify the information below and save.</DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleSave} className="grid gap-6 py-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-white">Name</Label>
+                  <Input
+                    value={editData.name || ""}
+                    onChange={(e) => setEditData({ ...editData, name: e.target.value })}
+                    required
+                    className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Species</Label>
+                  <Select
+                    value={editData.species || ""}
+                    onValueChange={(v) => setEditData({ ...editData, species: v as any })}
+                  >
+                    <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
+                      <SelectValue placeholder="Pick a species" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
+                      <SelectItem value="COW">Cow</SelectItem>
+                      <SelectItem value="SHEEP">Sheep</SelectItem>
+                      <SelectItem value="GOAT">Goat</SelectItem>
+                      <SelectItem value="OTHER">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Gender</Label>
+                  <Select
+                    value={editData.gender || ""}
+                    onValueChange={(v) => setEditData({ ...editData, gender: v as any })}
+                  >
+                    <SelectTrigger className="bg-white/15 text-white border-white/20 rounded-xl">
+                      <SelectValue placeholder="Pick a gender" />
+                    </SelectTrigger>
+                    <SelectContent className="bg-white/10 backdrop-blur-xl border-white/20 text-white w-[180px]">
+                      <SelectItem value="MALE">Male</SelectItem>
+                      <SelectItem value="FEMALE">Female</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Breed</Label>
+                  <Input
+                    value={editData.breed || ""}
+                    onChange={(e) => setEditData({ ...editData, breed: e.target.value })}
+                    className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-white">Age (years)</Label>
+                  <Input
+                    type="number"
+                    value={editData.age || ""}
+                    onChange={(e) => setEditData({ ...editData, age: Number(e.target.value) })}
+                    className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-white">Description</Label>
+                  <Textarea
+                    value={editData.description || ""}
+                    onChange={(e) => setEditData({ ...editData, description: e.target.value })}
+                    rows={3}
+                    className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-white">AI Predicted Value (HBAR)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    value={editData.aiPredictionValue || ""}
+                    onChange={(e) => setEditData({ ...editData, aiPredictionValue: Number(e.target.value) })}
+                    className="bg-white/15 text-white border-white/20 placeholder:text-white/50 rounded-xl"
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-white">Animal Image</Label>
+                  <FileUploader
+                    accept="image/*"
+                    onUpload={async (file) => {
+                      const { imageUrl } = await api.uploadAnimalImage(animal!.id, file)
+                      setAnimal((prev) => (prev ? { ...prev, imageUrl } : prev))
+                      toast({ title: "Image uploaded", description: "Animal picture updated." })
+                    }}
+                  />
+                </div>
+                <div className="col-span-2 space-y-2">
+                  <Label className="text-white">Veterinary Record</Label>
+                  <FileUploader
+                    accept=".pdf,.doc,.docx"
+                    onUpload={async (file) => {
+                      const { vetRecordUrl } = await api.uploadVetRecord(animal!.id, file)
+                      setAnimal((prev) => (prev ? { ...prev, vetRecordUrl } : prev))
+                      toast({ title: "Record uploaded", description: "Vet record updated." })
+                    }}
+                  />
+                </div>
+              </div>
+              <DialogFooter className="gap-2">
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => setEditOpen(false)}
+                  className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+                >
+                  Cancel
+                </Button>
+                <Button
+                  type="submit"
+                  disabled={saving}
+                  className="bg-[#093102] text-white hover:bg-[#093102]/90 rounded-xl"
+                >
+                  {saving && <LoadingSpinner className="mr-2 h-4 w-4" />}
+                  Save
+                </Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
+
+        {/* Delete Confirmation Modal */}
+        <Dialog open={delOpen} onOpenChange={setDelOpen}>
+          <DialogContent className="sm:max-w-md bg-white/10 backdrop-blur-xl border-white/20 text-white">
+            <DialogHeader>
+              <DialogTitle className="text-white">Confirm Deletion</DialogTitle>
+              <DialogDescription className="text-white/70">
+                Are you sure you want to permanently delete <strong>{animal.name}</strong>? This action cannot be undone.
               </DialogDescription>
             </DialogHeader>
-
             <DialogFooter className="gap-2">
-              <Button variant="outline" onClick={() => setDelOpen(false)}>
+              <Button
+                variant="outline"
+                onClick={() => setDelOpen(false)}
+                className="border-white/20 text-white hover:bg-white/10 bg-transparent rounded-xl"
+              >
                 Cancel
               </Button>
-              <Button variant="destructive" onClick={handleDelete}>
+              <Button
+                variant="destructive"
+                onClick={handleDelete}
+                className="bg-red-500/90 text-white hover:bg-red-500/80 rounded-xl"
+              >
                 Delete
               </Button>
             </DialogFooter>

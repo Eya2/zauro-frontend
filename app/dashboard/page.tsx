@@ -64,153 +64,157 @@ export default function DashboardPage() {
   }, [user])
 
   const handleCreateWallet = async () => {
-    try { await createWallet() } catch (error) { console.error("Failed to create wallet:", error) }
+    try {
+      await createWallet()
+      toast({ title: "Wallet created", description: "Your wallet is ready to use." })
+    } catch (error) {
+      console.error("Failed to create wallet:", error)
+      toast({ variant: "destructive", title: "Wallet creation failed", description: "Please try again." })
+    }
   }
 
-  /* ----------  GUARD  ---------- */
-  if (!user) return <LoadingSpinner />   // on n’affiche rien tant qu’on n’a pas le user
+  /* ---------- GUARD ---------- */
+  if (!user) return <LoadingSpinner />
 
   return (
     <ProtectedRoute>
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-[#0288D1] via-[#114232] to-[#0A1E16]">
         <Navbar />
 
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground">
+            <h1 className="text-3xl font-bold text-white">
               Welcome back, {user?.firstName ?? "User"}!
             </h1>
-            <p className="text-muted-foreground mt-2">Here&apos;s what&apos;s happening with your animal trading portfolio</p>
+            <p className="text-white/80 mt-2">Here&apos;s what&apos;s happening with your animal trading portfolio</p>
           </div>
 
-         {/* ----------  WALLET SECTION  ---------- */}
-{wallet ? (
-  <Card className="mb-8">
-    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-      <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
-      <Wallet className="h-4 w-4 text-muted-foreground" />
-    </CardHeader>
-    <CardContent>
-      <div className="text-2xl font-bold">
-        {Number.parseFloat(balance?.hbar || "0").toFixed(2)} HBAR
-      </div>
-      <p className="text-xs text-muted-foreground">
-        {Number.parseFloat(balance?.zauToken || "0").toFixed(2)} ZAU
-      </p>
-    </CardContent>
-  </Card>
-) : !walletLoading && (
-  <>
-    {/*  ORIGINAL ALERT  */}
-    <Alert className="mb-8">
-      <Wallet className="h-4 w-4" />
-      <AlertDescription className="flex items-center justify-between">
-        <span>You need to create a wallet to start trading animals.</span>
-        <Button onClick={handleCreateWallet} size="sm">
-          Create Wallet
-        </Button>
-      </AlertDescription>
-    </Alert>
+          {/* ---------- WALLET SECTION ---------- */}
+          {wallet ? (
+            <Card className="mb-8 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-sm font-medium text-white">Wallet Balance</CardTitle>
+                <Wallet className="h-4 w-4 text-white/50" />
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-white">
+                  {Number.parseFloat(balance?.hbar || "0").toFixed(2)} HBAR
+                </div>
+                <p className="text-xs text-white/70">
+                  {Number.parseFloat(balance?.zauToken || "0").toFixed(2)} ZAU
+                </p>
+              </CardContent>
+            </Card>
+          ) : !walletLoading && (
+            <>
+              {/* Create Wallet Alert */}
+              <Alert className="mb-8 bg-white/15 border-white/20 text-white">
+                <Wallet className="h-4 w-4 text-white/50" />
+                <AlertDescription className="flex items-center justify-between">
+                  <span className="text-white/80">You need to create a wallet to start trading animals.</span>
+                  <Button
+                    onClick={handleCreateWallet}
+                    size="sm"
+                    className="bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
+                  >
+                    Create Wallet
+                  </Button>
+                </AlertDescription>
+              </Alert>
 
-    {/*  NEW: CREATE + FUND WALLET CARD  */}
-    <Card className="mb-8">
-      <CardHeader>
-        <CardTitle className="text-base flex items-center gap-2">
-          <Wallet className="h-5 w-5" />
-          Create wallet with starting balance
-        </CardTitle>
-        <CardDescription>
-          Get started immediately—new wallet comes with 10 ℏ pre-funded by the platform.
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <Button
-          onClick={async () => {
-            try {
-              await api.createWalletWithBalance(10)
-              toast({ title: "Wallet created & funded", description: "10 ℏ added to your new account." })
-              await createWallet() // re-sync hooks
-            } catch {
-              toast({ variant: "destructive", title: "Creation failed" })
-            }
-          }}
-        >
-          Create Wallet with 10 HBAR
-        </Button>
-      </CardContent>
-    </Card>
-  </>
-)}
+              {/* Create + Fund Wallet Card */}
+              <Card className="mb-8 bg-white/10 backdrop-blur-xl border-white/20 shadow-2xl rounded-2xl shadow-[#0288D1]/20">
+                <CardHeader>
+                  <CardTitle className="text-base flex items-center gap-2 text-white">
+                    <Wallet className="h-5 w-5 text-[#939896]" />
+                    Create wallet with starting balance
+                  </CardTitle>
+                  <CardDescription className="text-white/70">
+                    Get started immediately—new wallet comes with 10 ℏ pre-funded by the platform.
+                  </CardDescription>
+                </CardHeader>
+                <CardContent>
+                  <Button
+                    onClick={async () => {
+                      try {
+                        await api.createWalletWithBalance(10)
+                        toast({ title: "Wallet created & funded", description: "10 ℏ added to your new account." })
+                        await createWallet() // re-sync hooks
+                      } catch {
+                        toast({ variant: "destructive", title: "Creation failed" })
+                      }
+                    }}
+                    className="bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
+                  >
+                    Create Wallet with 10 HBAR
+                  </Button>
+                </CardContent>
+              </Card>
+            </>
+          )}
+
           {/* Stats Cards */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Wallet Balance</CardTitle>
-                <Wallet className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">Wallet Balance</CardTitle>
+                <Wallet className="h-4 w-4 text-white/50" />
               </CardHeader>
               <CardContent>
                 {walletLoading ? (
                   <LoadingSpinner size="sm" />
                 ) : balance ? (
                   <div>
-                    <div className="text-2xl font-bold">{Number.parseFloat(balance.hbar).toFixed(2)} HBAR</div>
-                    <p className="text-xs text-muted-foreground">{Number.parseFloat(balance.zauToken).toFixed(2)} ZAU</p>
+                    <div className="text-2xl font-bold text-white">{Number.parseFloat(balance.hbar).toFixed(2)} HBAR</div>
+                    <p className="text-xs text-white/70">{Number.parseFloat(balance.zauToken).toFixed(2)} ZAU</p>
                   </div>
                 ) : (
-                  <div className="text-sm text-muted-foreground">No wallet</div>
+                  <div className="text-sm text-white/70">No wallet</div>
                 )}
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Animals</CardTitle>
-                <Users className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">Total Animals</CardTitle>
+                <Users className="h-4 w-4 text-white/50" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.totalAnimals}</div>
-                <p className="text-xs text-muted-foreground">{stats.listedAnimals} listed for trade</p>
+                <div className="text-2xl font-bold text-white">{stats.totalAnimals}</div>
+                <p className="text-xs text-white/70">{stats.listedAnimals} listed for trade</p>
               </CardContent>
             </Card>
 
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Completed Trades</CardTitle>
-                <Activity className="h-4 w-4 text-muted-foreground" />
+                <CardTitle className="text-sm font-medium text-white">Completed Trades</CardTitle>
+                <Activity className="h-4 w-4 text-white/50" />
               </CardHeader>
               <CardContent>
-                <div className="text-2xl font-bold">{stats.completedTrades}</div>
-                <p className="text-xs text-muted-foreground">
-                  <TrendingUp className="inline h-3 w-3 mr-1" />
+                <div className="text-2xl font-bold text-white">{stats.completedTrades}</div>
+                <p className="text-xs text-white/70">
+                  <TrendingUp className="inline h-3 w-3 mr-1 text-white/50" />
                   Trading activity
                 </p>
               </CardContent>
             </Card>
-
-            <Card>
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-sm font-medium">Total Value</CardTitle>
-                <DollarSign className="h-4 w-4 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <div className="text-2xl font-bold">{stats.totalValue}</div>
-                <p className="text-xs text-muted-foreground">From completed trades</p>
-              </CardContent>
-            </Card>
           </div>
-
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Recent Animals */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Recent Animals</CardTitle>
-                  <CardDescription>Your latest registered animals</CardDescription>
+                  <CardTitle className="text-white">Recent Animals</CardTitle>
+                  <CardDescription className="text-white/70">Your latest registered animals</CardDescription>
                 </div>
-                <Button asChild size="sm">
+                <Button
+                  asChild
+                  size="sm"
+                  className="bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
+                >
                   <Link href="/animals/create">
-                    <PlusCircle className="h-4 w-4 mr-2" />
+                    <PlusCircle className="h-4 w-4 mr-2 text-white/60" />
                     Add Animal
                   </Link>
                 </Button>
@@ -221,38 +225,54 @@ export default function DashboardPage() {
                 ) : recentAnimals.length > 0 ? (
                   <div className="space-y-4">
                     {recentAnimals.slice(0, 5).map((animal) => (
-                      <div key={animal.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={animal.id} className="flex items-center justify-between p-3 bg-white/15 border border-white/20 rounded-lg">
                         <div className="flex items-center space-x-3">
                           {animal.imageUrl ? (
-                            <img src={animal.imageUrl || "/placeholder.svg"} alt={animal.name} className="w-10 h-10 rounded-full object-cover" />
+                            <img
+                              src={animal.imageUrl || "/placeholder.svg"}
+                              alt={animal.name}
+                              className="w-10 h-10 rounded-full object-cover"
+                            />
                           ) : (
-                            <div className="w-10 h-10 bg-muted rounded-full flex items-center justify-center">
-                              <Users className="h-5 w-5 text-muted-foreground" />
+                            <div className="w-10 h-10 bg-white/15 rounded-full flex items-center justify-center border border-white/20">
+                              <Users className="h-5 w-5 text-white/50" />
                             </div>
                           )}
                           <div>
-                            <p className="font-medium">{animal.name}</p>
-                            <p className="text-sm text-muted-foreground">{animal.species} • {animal.breed || "Mixed"}</p>
+                            <p className="font-medium text-white">{animal.name}</p>
+                            <p className="text-sm text-white/70">{animal.species} • {animal.breed || "Mixed"}</p>
                           </div>
                         </div>
                         <div className="flex items-center space-x-2">
-                          {animal.isListed && <Badge variant="secondary">Listed</Badge>}
-                          {animal.tokenId && <Badge variant="outline">NFT</Badge>}
-                          <Button variant="ghost" size="sm" asChild>
+                          {animal.isListed && <Badge className="bg-white/15 text-white border-white/20">Listed</Badge>}
+                          {animal.tokenId && <Badge className="border-white/20 text-white bg-transparent">NFT</Badge>}
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-white/60 hover:text-white"
+                            asChild
+                          >
                             <Link href={`/animals/${animal.id}`}><Eye className="h-4 w-4" /></Link>
                           </Button>
                         </div>
                       </div>
                     ))}
-                    <Button variant="outline" className="w-full bg-transparent" asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
+                      asChild
+                    >
                       <Link href="/animals">View All Animals</Link>
                     </Button>
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Users className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No animals registered yet</p>
-                    <Button asChild className="mt-4">
+                    <Users className="h-12 w-12 text-white/50 mx-auto mb-4" />
+                    <p className="text-white/70">No animals registered yet</p>
+                    <Button
+                      asChild
+                      className="mt-4 bg-[#093102] text-white rounded-xl hover:bg-[#093102]/90"
+                    >
                       <Link href="/animals/create">Register Your First Animal</Link>
                     </Button>
                   </div>
@@ -261,15 +281,20 @@ export default function DashboardPage() {
             </Card>
 
             {/* Recent Trades */}
-            <Card>
+            <Card className="bg-white/10 backdrop-blur-xl border-white/20 shadow-lg rounded-2xl shadow-[#0288D1]/20">
               <CardHeader className="flex flex-row items-center justify-between">
                 <div>
-                  <CardTitle>Recent Trades</CardTitle>
-                  <CardDescription>Your latest trading activity</CardDescription>
+                  <CardTitle className="text-white">Recent Trades</CardTitle>
+                  <CardDescription className="text-white/70">Your latest trading activity</CardDescription>
                 </div>
-                <Button asChild size="sm" variant="outline">
+                <Button
+                  asChild
+                  size="sm"
+                  variant="outline"
+                  className="border-white/20 text-white hover:bg-white/10"
+                >
                   <Link href="/trades">
-                    <ShoppingCart className="h-4 w-4 mr-2" />
+                    <ShoppingCart className="h-4 w-4 mr-2 text-white/60" />
                     View All
                   </Link>
                 </Button>
@@ -280,38 +305,51 @@ export default function DashboardPage() {
                 ) : recentTrades.length > 0 ? (
                   <div className="space-y-4">
                     {recentTrades.slice(0, 5).map((trade) => (
-                      <div key={trade.id} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div key={trade.id} className="flex items-center justify-between p-3 bg-white/15 border border-white/20 rounded-lg">
                         <div>
-                          <p className="font-medium">{trade.animal?.name || "Unknown Animal"}</p>
-                          <p className="text-sm text-muted-foreground">{trade.price} {trade.currency}</p>
+                          <p className="font-medium text-white">{trade.animal?.name || "Unknown Animal"}</p>
+                          <p className="text-sm text-white/70">{trade.price} {trade.currency}</p>
                         </div>
                         <div className="flex items-center space-x-2">
                           <Badge
-                            variant={
+                            className={
                               trade.status === "COMPLETED"
-                                ? "default"
+                                ? "bg-green-500/20 text-green-100 border-green-400/30"
                                 : trade.status === "FAILED"
-                                  ? "destructive"
-                                  : "secondary"
+                                  ? "bg-red-500/20 text-red-100 border-red-400/30"
+                                  : "bg-white/15 text-white border-white/20"
                             }
                           >
                             {trade.status}
                           </Badge>
-                          <Button variant="ghost" size="sm" asChild>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="text-white/60 hover:text-white"
+                            asChild
+                          >
                             <Link href={`/trades/${trade.id}`}><Eye className="h-4 w-4" /></Link>
                           </Button>
                         </div>
                       </div>
                     ))}
-                    <Button variant="outline" className="w-full bg-transparent" asChild>
+                    <Button
+                      variant="outline"
+                      className="w-full bg-transparent border-white/20 text-white hover:bg-white/10"
+                      asChild
+                    >
                       <Link href="/trades">View All Trades</Link>
                     </Button>
                   </div>
                 ) : (
                   <div className="text-center py-8">
-                    <Activity className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                    <p className="text-muted-foreground">No trades yet</p>
-                    <Button asChild className="mt-4 bg-transparent" variant="outline">
+                    <Activity className="h-12 w-12 text-white/50 mx-auto mb-4" />
+                    <p className="text-white/70">No trades yet</p>
+                    <Button
+                      asChild
+                      className="mt-4 bg-transparent border-white/20 text-white hover:bg-white/10"
+                      variant="outline"
+                    >
                       <Link href="/animals">Browse Animals to Trade</Link>
                     </Button>
                   </div>
