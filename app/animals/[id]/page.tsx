@@ -318,6 +318,12 @@ export default function AnimalDetailPage() {
                             <p className="font-medium text-white">{animal.breed}</p>
                           </div>
                         )}
+                        {animal.gender && (
+                          <div>
+                            <p className="text-sm text-white/70">Gender</p>
+                            <p className="font-medium text-white">{animal.gender}</p>
+                          </div>
+                        )}
                         {animal.age && (
                           <div>
                             <p className="text-sm text-white/70">Age</p>
